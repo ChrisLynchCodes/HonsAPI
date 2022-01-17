@@ -53,5 +53,5 @@ jobs:
         with:
           app-name: 'honsapi'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_668CAA4B3EC94ADCAD6CD66FC6E4A545 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_99BFE702A3D141F79E6FF6142F710F66 }}
           package: .
