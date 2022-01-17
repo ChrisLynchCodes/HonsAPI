@@ -1,2 +1,2 @@
-# HonsAPI
-.NET Core Web Api supporting my full stack application being developed for my honours project.
+# HonsBackendAPI
+dotnet core web api pulling from mongodb 
