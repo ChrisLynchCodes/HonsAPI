@@ -12,7 +12,7 @@ namespace HonsBackendAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-
+    [APIKey]
     public class OrdersController : ControllerBase
     {
         private readonly IOrderRepository _ordersRepository;

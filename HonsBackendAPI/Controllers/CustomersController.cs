@@ -15,7 +15,7 @@ using System.Text;
 namespace HonsBackendAPI.Controllers
 {
     [Route("api/[controller]")]
-
+    [APIKey]
     [ApiController]
     public class CustomersController : ControllerBase
     {

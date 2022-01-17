@@ -11,7 +11,7 @@ namespace HonsBackendAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-
+    [APIKey]
     public class ProductsController : ControllerBase
     {
         private readonly IProductRepository _productsRepository;

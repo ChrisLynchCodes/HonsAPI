@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using HonsBackendAPI.Attributes;
 using HonsBackendAPI.DTOs;
 using HonsBackendAPI.Models;
 using HonsBackendAPI.Services.Repositories;
@@ -9,6 +10,7 @@ namespace HonsBackendAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [APIKey]
     public class ReviewsController : ControllerBase
     {
 
