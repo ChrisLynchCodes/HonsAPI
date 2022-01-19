@@ -3,6 +3,7 @@ using HonsBackendAPI.Attributes;
 using HonsBackendAPI.DTOs;
 using HonsBackendAPI.Models;
 using HonsBackendAPI.Services.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +11,7 @@ namespace HonsBackendAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [APIKey]
+    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
     public class CategoriesController : ControllerBase
     {
         private readonly ICategoryRepository _categoriesRepository;
@@ -30,25 +31,25 @@ namespace HonsBackendAPI.Controllers
         [HttpHead]
         public async Task<ActionResult<IEnumerable<CategoryDto>>> Get()
         {
-            var categories = await _categoriesRepository.GetAsync();
+            var categoryModels = await _categoriesRepository.GetAllAsync();
 
-            return Ok(_mapper.Map<IEnumerable<CategoryDto>>(categories));
+            return Ok(_mapper.Map<IEnumerable<CategoryDto>>(categoryModels));
 
         }
 
 
         // GET api/<CategoriesController>/5
         [HttpGet("{id:length(24)}")]
-        public async Task<ActionResult<CategoryDto>> Get(string id)
+        public async Task<ActionResult<CategoryDto>> Get(string categoryId)
         {
-            var categories = await _categoriesRepository.GetAsync(id);
+            var categoryModel = await _categoriesRepository.GetOneAsync(categoryId);
 
-            if (categories is null)
+            if (categoryModel is null)
             {
                 return NotFound();
             }
 
-            return Ok(_mapper.Map<CategoryDto>(categories));
+            return Ok(_mapper.Map<CategoryDto>(categoryModel));
         }
 
 
@@ -70,20 +71,21 @@ namespace HonsBackendAPI.Controllers
 
         // PUT api/<CategoriesController>/5
         [HttpPut("{id:length(24)}")]
-        public async Task<IActionResult> Update(string id, [FromBody] CategoryCreateDto updatedCategory)
+        public async Task<IActionResult> Update(string categoryid, [FromBody] CategoryCreateDto updatedCategory)
         {
-            var category = await _categoriesRepository.GetAsync(id);
+            var categoryModel = await _categoriesRepository.GetOneAsync(categoryid);
 
-            if (category is null)
+            if (categoryModel is null)
             {
                 return NotFound();
             }
 
             var categoryToSave = _mapper.Map<Category>(updatedCategory);
           
-            categoryToSave.Id = category.Id;
+            categoryToSave.Id = categoryModel.Id;
             categoryToSave.UpdatedAt = DateTime.Now;
-            categoryToSave.CreatedAt = category.CreatedAt;
+            categoryToSave.CreatedAt = categoryModel.CreatedAt;
+
             if (categoryToSave.Id is null)
             {
                 return NotFound();
@@ -97,16 +99,16 @@ namespace HonsBackendAPI.Controllers
 
         // DELETE api/<CategoriesController>/5
         [HttpDelete("{id:length(24)}")]
-        public async Task<IActionResult> Delete(string id)
+        public async Task<IActionResult> Delete(string categoryId)
         {
-            var categories = await _categoriesRepository.GetAsync(id);
+            var categoryModel = await _categoriesRepository.GetOneAsync(categoryId);
 
-            if (categories is null || categories.Id is null)
+            if (categoryModel is null || categoryModel.Id is null)
             {
                 return NotFound();
             }
 
-            await _categoriesRepository.RemoveAsync(categories.Id);
+            await _categoriesRepository.RemoveAsync(categoryModel.Id);
 
             return NoContent();
         }

@@ -18,19 +18,19 @@ namespace HonsBackendAPI.Services.Repositories
 
 
         }
-        public async Task<List<Order>> GetAsync() =>
+        public async Task<List<Order>> GetAllAsync() =>
                 await _ordersCollection.Find(_ => true).ToListAsync();
-        public async Task<Order?> GetAsync(string id) =>
-        await _ordersCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
-        public async Task<List<Order>> GetForAsync(string customerId) =>
+        public async Task<Order?> GetOneAsync(string orderId) =>
+        await _ordersCollection.Find(x => x.Id == orderId).FirstOrDefaultAsync();
+        public async Task<List<Order>> GetOrdersForCustomerAsync(string customerId) =>
          await _ordersCollection.Find(x => x.CustomerId == customerId).ToListAsync();
         public async Task CreateAsync(Order newOrder) =>
         await _ordersCollection.InsertOneAsync(newOrder);
 
-        public async Task UpdateAsync(string id, Order updatedOrder) =>
-            await _ordersCollection.ReplaceOneAsync(x => x.Id == id, updatedOrder);
+        public async Task UpdateAsync(string orderId, Order updatedOrder) =>
+            await _ordersCollection.ReplaceOneAsync(x => x.Id == orderId, updatedOrder);
 
-        public async Task RemoveAsync(string id) =>
-            await _ordersCollection.DeleteOneAsync(x => x.Id == id);
+        public async Task RemoveAsync(string orderId) =>
+            await _ordersCollection.DeleteOneAsync(x => x.Id == orderId);
     }
 }

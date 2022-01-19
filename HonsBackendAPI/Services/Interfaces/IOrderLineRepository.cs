@@ -8,8 +8,8 @@ namespace HonsBackendAPI.Services.Repositories
       
         Task<OrderLine?> GetOneAsync(string orderId, string orderLineId);
         Task<List<OrderLine>> GetAllAsync(string orderId);
-        Task RemoveAsync(string id);
-        Task RemoveManyAsync(string id);
-        Task UpdateAsync(string id, OrderLine updatedOrderLine);
+        Task RemoveAsync(string orderLineId);
+        Task RemoveManyAsync(string orderId);
+        Task UpdateAsync(string orderLineId, OrderLine updatedOrderLine);
     }
 }

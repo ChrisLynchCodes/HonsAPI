@@ -4,6 +4,7 @@ using HonsBackendAPI.DTOs;
 using HonsBackendAPI.Models;
 using HonsBackendAPI.Services;
 using HonsBackendAPI.Services.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +12,7 @@ namespace HonsBackendAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [APIKey]
+    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
     public class ProductsController : ControllerBase
     {
         private readonly IProductRepository _productsRepository;
@@ -32,25 +33,25 @@ namespace HonsBackendAPI.Controllers
         [HttpHead]
         public async Task<ActionResult<IEnumerable<ProductDto>>> Get()
         {
-            var products = await _productsRepository.GetAsync();
+            var productModels = await _productsRepository.GetAllAsync();
 
-            return Ok(_mapper.Map<IEnumerable<ProductDto>>(products));
+            return Ok(_mapper.Map<IEnumerable<ProductDto>>(productModels));
 
         }
 
 
         // GET api/<ProductsController>/5
         [HttpGet("{id:length(24)}")]
-        public async Task<ActionResult<ProductDto>> Get(string id)
+        public async Task<ActionResult<ProductDto>> Get(string ProductId)
         {
-            var product = await _productsRepository.GetAsync(id);
+            var productModel = await _productsRepository.GetOneAsync(ProductId);
 
-            if (product is null)
+            if (productModel is null)
             {
                 return NotFound();
             }
 
-            return Ok(_mapper.Map<ProductDto>(product));
+            return Ok(_mapper.Map<ProductDto>(productModel));
         }
 
 
@@ -60,8 +61,8 @@ namespace HonsBackendAPI.Controllers
         [HttpPost("{categoryId}")]
         public async Task<IActionResult> Post(string categoryId, [FromBody] ProductCreateDto newProduct)
         {
-            var category = await _categoriessRepository.GetAsync(categoryId);
-            if(category is null || category.Id is null)
+            var categoryModel = await _categoriessRepository.GetOneAsync(categoryId);
+            if(categoryModel is null || categoryModel.Id is null)
             {
                 return NotFound();
             }
@@ -69,7 +70,7 @@ namespace HonsBackendAPI.Controllers
             
 
             var productModel = _mapper.Map<Product>(newProduct);
-            productModel.CategoryId = category.Id;
+            productModel.CategoryId = categoryModel.Id;
 
             await _productsRepository.CreateAsync(productModel);
 
@@ -83,20 +84,20 @@ namespace HonsBackendAPI.Controllers
 
         // PUT api/<CategoriesController>/5
         [HttpPut("{id:length(24)}")]
-        public async Task<IActionResult> Update(string id, [FromBody] ProductCreateDto updatedProduct)
+        public async Task<IActionResult> Update(string productId, [FromBody] ProductCreateDto updatedProduct)
         {
-            var product = await _productsRepository.GetAsync(id);
+            var productModel = await _productsRepository.GetOneAsync(productId);
 
-            if (product is null)
+            if (productModel is null)
             {
                 return NotFound();
             }
 
             var productToSave = _mapper.Map<Product>(updatedProduct);
 
-            productToSave.Id = product.Id;
+            productToSave.Id = productModel.Id;
             productToSave.UpdatedAt = DateTime.Now;
-            productToSave.CreatedAt = product.CreatedAt;
+            productToSave.CreatedAt = productModel.CreatedAt;
             if (productToSave.Id is null)
             {
                 return NotFound();
@@ -110,18 +111,26 @@ namespace HonsBackendAPI.Controllers
 
         // DELETE api/<ProductsController>/5
         [HttpDelete("{id:length(24)}")]
-        public async Task<IActionResult> Delete(string id)
+        public async Task<IActionResult> Delete(string productId)
         {
-            var product = await _productsRepository.GetAsync(id);
+            var productModel = await _productsRepository.GetOneAsync(productId);
 
-            if (product is null || product.Id is null)
+            if (productModel is null || productModel.Id is null)
             {
                 return NotFound();
             }
 
-            await _productsRepository.RemoveAsync(product.Id);
+            await _productsRepository.RemoveAsync(productModel.Id);
 
             return NoContent();
+        }
+
+
+        [HttpOptions]
+        public  IActionResult GetAuthorsOptions()
+        {
+            Response.Headers.Add("Allow", "GET,OPTIONS,POST,PUT,DEL");
+            return Ok();
         }
     }
 }

@@ -21,22 +21,24 @@ namespace HonsBackendAPI.Services.Repositories
 
         }
 
-        public async Task<List<Customer>> GetAsync() =>          
+        public async Task<List<Customer>> GetAllAsync() =>
             await _customersCollection.Find(_ => true).ToListAsync();
-                      
-        public async Task<Customer?> GetAsync(string id) =>
-        await _customersCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
+
+        public async Task<Customer?> GetOneAsync(string customerId) =>
+            await _customersCollection.Find(x => x.Id == customerId).FirstOrDefaultAsync();
+
+        public async Task<Customer?> GetByEmail(string email) =>
+            await _customersCollection.Find(x => x.Email == email).FirstOrDefaultAsync();
 
         public async Task CreateAsync(Customer newCustomer) =>
-        await _customersCollection.InsertOneAsync(newCustomer);
+            await _customersCollection.InsertOneAsync(newCustomer);
 
-        public async Task UpdateAsync(string id, Customer updatedCustomer) =>
-            await _customersCollection.ReplaceOneAsync(x => x.Id == id, updatedCustomer);
+        public async Task UpdateAsync(string customerId, Customer updatedCustomer) =>
+            await _customersCollection.ReplaceOneAsync(x => x.Id == customerId, updatedCustomer);
 
-        public async Task RemoveAsync(string id) =>
-            await _customersCollection.DeleteOneAsync(x => x.Id == id);
+        public async Task RemoveAsync(string customerId) =>
+            await _customersCollection.DeleteOneAsync(x => x.Id == customerId);
 
-        public async Task<Customer?> CustomerExists(string email) =>
-         await _customersCollection.Find(x => x.Email == email).FirstOrDefaultAsync();
+
     }
 }

@@ -33,26 +33,22 @@ namespace HonsBackendAPI.Services.Repositories
         //Get a specific orderline in an order
         public async Task<OrderLine?> GetOneAsync(string orderId, string orderLineId)
         {
+            //get all orderlines for the orderId
             var orderLines = await _orderLinesCollection.Find(x => x.OrderId == orderId).ToListAsync();
 
+            //return the line with the corresponding id
             return orderLines.Find(x => x.Id == orderLineId);
 
         }
-
         
-
-
-
-
-
         public async Task CreateAsync(OrderLine newOrderLine) =>
             await _orderLinesCollection.InsertOneAsync(newOrderLine);
 
-        public async Task UpdateAsync(string id, OrderLine updatedOrderLine) =>
-            await _orderLinesCollection.ReplaceOneAsync(x => x.Id == id, updatedOrderLine);
+        public async Task UpdateAsync(string orderLineId, OrderLine updatedOrderLine) =>
+            await _orderLinesCollection.ReplaceOneAsync(x => x.Id == orderLineId, updatedOrderLine);
 
-        public async Task RemoveAsync(string id) =>
-            await _orderLinesCollection.DeleteOneAsync(x => x.Id == id);
+        public async Task RemoveAsync(string orderLineId) =>
+            await _orderLinesCollection.DeleteOneAsync(x => x.Id == orderLineId);
 
         public async Task RemoveManyAsync(string orderId) =>        
         await _orderLinesCollection.DeleteManyAsync(x => x.OrderId == orderId);

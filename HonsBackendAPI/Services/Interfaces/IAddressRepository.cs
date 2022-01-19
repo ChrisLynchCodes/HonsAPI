@@ -5,9 +5,9 @@ namespace HonsBackendAPI.Services.Repositories
     public interface IAddressRepository
     {
         Task CreateAsync(Address newAddress);
-        Task<List<Address>> GetAsync(string customerId);
+        Task<List<Address>> GetAllAsync(string customerId);
         Task<Address?> GetOneAsync(string addressId);
-        Task RemoveAsync(string id);
+        Task RemoveAsync(string addresId);
         Task UpdateAsync(string addressId, Address updatedAddress);
     }
 }

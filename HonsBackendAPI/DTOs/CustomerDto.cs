@@ -22,6 +22,8 @@ namespace HonsBackendAPI.DTOs
        
         public string? ConfirmPassword { get; set; }
 
+        public string? Role { get; set; }
+
 
         public DateTime CreatedAt { get; set; }
 

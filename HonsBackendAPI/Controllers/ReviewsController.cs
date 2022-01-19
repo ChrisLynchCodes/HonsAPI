@@ -3,6 +3,7 @@ using HonsBackendAPI.Attributes;
 using HonsBackendAPI.DTOs;
 using HonsBackendAPI.Models;
 using HonsBackendAPI.Services.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;    
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +11,7 @@ namespace HonsBackendAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [APIKey]
+    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
     public class ReviewsController : ControllerBase
     {
 
@@ -35,15 +36,15 @@ namespace HonsBackendAPI.Controllers
         [HttpHead]
         public async Task<ActionResult<IEnumerable<ReviewDto>>> Get()
         {
-            var reviews = await _reviewRepository.GetAsync();
+            var reviewModels = await _reviewRepository.GetAllAsync();
 
-            if (reviews is null )
+            if (reviewModels is null )
             {
                 return NotFound();
             }
 
 
-            return Ok(_mapper.Map<IEnumerable<ReviewDto>>(reviews));
+            return Ok(_mapper.Map<IEnumerable<ReviewDto>>(reviewModels));
 
 
         }
@@ -55,9 +56,9 @@ namespace HonsBackendAPI.Controllers
         public async Task<ActionResult<ReviewDto>> Get(string reviewId)
         {
             //Ensure review is valid
-            var review = await _reviewRepository.GetAsync(reviewId);
+            var reviewModel = await _reviewRepository.GetOneAsync(reviewId);
 
-            if (review is null || review.Id is null)
+            if (reviewModel is null || reviewModel.Id is null)
             {
                 return NotFound();
             }
@@ -65,7 +66,7 @@ namespace HonsBackendAPI.Controllers
             
 
             //Map model to output DTO & return
-            return Ok(_mapper.Map<Review>(review));
+            return Ok(_mapper.Map<Review>(reviewModel));
 
 
         }
@@ -77,15 +78,15 @@ namespace HonsBackendAPI.Controllers
         [Route("[action]/{productId}")]
         public async Task<ActionResult<IEnumerable<ReviewDto>>> GetAllReviewsForProduct(string productId)
         {
-            var reviews = await _reviewRepository.GetReviewsForProductAsync(productId);
+            var reviewForProductModels = await _reviewRepository.GetReviewsForProductAsync(productId);
 
-            if (reviews is null)
+            if (reviewForProductModels is null)
             {
                 return NotFound();
             }
 
 
-            return Ok(_mapper.Map<IEnumerable<ReviewDto>>(reviews));
+            return Ok(_mapper.Map<IEnumerable<ReviewDto>>(reviewForProductModels));
 
 
         }
@@ -97,15 +98,15 @@ namespace HonsBackendAPI.Controllers
         [Route("[action]/{customerId}")]
         public async Task<ActionResult<IEnumerable<ReviewDto>>> GetAllReviewsByCustomer(string customerId)
         {
-            var reviews = await _reviewRepository.GetReviewsForCustomerAsync(customerId);
+            var reviewByCustomerModels = await _reviewRepository.GetReviewsByCustomerAsync(customerId);
 
-            if (reviews is null)
+            if (reviewByCustomerModels is null)
             {
                 return NotFound();
             }
 
 
-            return Ok(_mapper.Map<IEnumerable<ReviewDto>>(reviews));
+            return Ok(_mapper.Map<IEnumerable<ReviewDto>>(reviewByCustomerModels));
 
 
         }
@@ -118,14 +119,14 @@ namespace HonsBackendAPI.Controllers
         public async Task<IActionResult> Post(string customerId, string productId, [FromBody] ReviewCreateDto newReview)
         {
             //Ensure customerId is a valid customer
-            var customer = await _customersRepository.GetAsync(customerId);
-            if (customer is null || customer.Id is null)
+            var customerModel = await _customersRepository.GetOneAsync(customerId);
+            if (customerModel is null || customerModel.Id is null)
             {
                 return NotFound();
             }
             //Ensure productId is a valid product
-            var product = await _productsRepository.GetAsync(productId);
-            if (product is null || product.Id is null)
+            var productModel = await _productsRepository.GetOneAsync(productId);
+            if (productModel is null || productModel.Id is null)
             {
                 return NotFound();
             }
@@ -136,8 +137,8 @@ namespace HonsBackendAPI.Controllers
 
 
             //add the valid customer id to the addresses  customer id
-            reviewModel.CustomerId = customer.Id;
-            reviewModel.ProductId = product.Id;
+            reviewModel.CustomerId = customerModel.Id;
+            reviewModel.ProductId = productModel.Id;
             //Save model in db
             await _reviewRepository.CreateAsync(reviewModel);
 
@@ -164,20 +165,20 @@ namespace HonsBackendAPI.Controllers
         [HttpPut("{reviewId:length(24)}")]
         public async Task<IActionResult> Update(string reviewId, [FromBody] ReviewCreateDto updatedReview)
         {
-            var review = await _reviewRepository.GetAsync(reviewId);
+            var reviewModel = await _reviewRepository.GetOneAsync(reviewId);
 
-            if (review is null)
+            if (reviewModel is null)
             {
                 return NotFound();
             }
 
             var reviewToSave = _mapper.Map<Review>(updatedReview);
 
-            reviewToSave.Id = review.Id;
-            reviewToSave.CustomerId = review.CustomerId;
-            reviewToSave.ProductId = review.ProductId;
+            reviewToSave.Id = reviewModel.Id;
+            reviewToSave.CustomerId = reviewModel.CustomerId;
+            reviewToSave.ProductId = reviewModel.ProductId;
             reviewToSave.UpdatedAt = DateTime.Now;
-            reviewToSave.CreatedAt = review.CreatedAt;
+            reviewToSave.CreatedAt = reviewModel.CreatedAt;
             if (reviewToSave.Id is null)
             {
                 return NotFound();
@@ -193,16 +194,16 @@ namespace HonsBackendAPI.Controllers
         [HttpDelete("{reviewId:length(24)}")]
         public async Task<IActionResult> Delete(string reviewId)
         {
-            var review = await _reviewRepository.GetAsync(reviewId);
+            var reviewModel = await _reviewRepository.GetOneAsync(reviewId);
 
-            if (review is null || review.Id is null)
+            if (reviewModel is null || reviewModel.Id is null)
             {
                 return NotFound();
             }
             
 
 
-            await _reviewRepository.RemoveAsync(review.Id);
+            await _reviewRepository.RemoveAsync(reviewModel.Id);
 
             return NoContent();
         }

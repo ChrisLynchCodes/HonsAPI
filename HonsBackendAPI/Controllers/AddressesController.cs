@@ -3,6 +3,7 @@ using HonsBackendAPI.Attributes;
 using HonsBackendAPI.DTOs;
 using HonsBackendAPI.Models;
 using HonsBackendAPI.Services.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +11,7 @@ namespace HonsBackendAPI.Controllers
 {
     [Route("api/customers/{customerId}/addresses")]
     [ApiController]
-    [APIKey]
+    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
     public class AddressesController : ControllerBase
     {
         private readonly IAddressRepository _addressesRepository;
@@ -32,14 +33,14 @@ namespace HonsBackendAPI.Controllers
         [HttpHead]
         public async Task<ActionResult<IEnumerable<AddressDto>>> Get(string customerId)
         {
-            var customer = await _customersRepository.GetAsync(customerId);
+            var customer = await _customersRepository.GetOneAsync(customerId);
 
             if (customer is null || customer.Id is null)
             {
                 return NotFound();
             }
 
-            var addresses = await _addressesRepository.GetAsync(customer.Id);
+            var addresses = await _addressesRepository.GetAllAsync(customer.Id);
 
             if (addresses is null)
             {
@@ -60,7 +61,7 @@ namespace HonsBackendAPI.Controllers
         public async Task<ActionResult<AddressDto>> Get(string customerId, string addressId)
         {
             //Ensure customer is valid
-            var customer = await _customersRepository.GetAsync(customerId);
+            var customer = await _customersRepository.GetOneAsync(customerId);
 
             if (customer is null || customer.Id is null)
             {
@@ -91,7 +92,7 @@ namespace HonsBackendAPI.Controllers
         public async Task<IActionResult> Post(string customerId, [FromBody] AddressCreateDto newAddress)
         {
             //Ensure customerId is a valid customer
-            var customer = await _customersRepository.GetAsync(customerId);
+            var customer = await _customersRepository.GetOneAsync(customerId);
             if (customer is null || customer.Id is null)
             {
                 return NotFound();
@@ -160,7 +161,7 @@ namespace HonsBackendAPI.Controllers
         [HttpDelete("{addressId:length(24)}")]
         public async Task<IActionResult> Delete(string customerId, string addressId)
         {
-            var customer = await _customersRepository.GetAsync(customerId);
+            var customer = await _customersRepository.GetOneAsync(customerId);
 
             if (customer is null || customer.Id is null)
             {

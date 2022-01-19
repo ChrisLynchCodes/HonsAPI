@@ -35,6 +35,9 @@ namespace HonsBackendAPI.Models
         [BsonElement("confirm-password")]
         public string? ConfirmPassword { get; set; }
 
+        [Required]
+        [BsonElement("role")]
+        public string? Role { get; set; }
 
 
         [Required]

@@ -8,14 +8,28 @@ namespace HonsBackendAPI.JWT
     {
         public static IEnumerable<Claim> GetClaims(this UserToken userToken, string Id)
         {
+            ICollection<string> Roles = new List<string>();
+            if (userToken.Role is not null && userToken.Role.Equals("Customer"))
+            {
+                Roles.Add("Customer");
+            
+            }
+            else if (userToken.Role is not null && userToken.Role.Equals("Admin"))
+            {
+                Roles.Add("Admin");
+            }
+           
 
-            IEnumerable<Claim> claims = new Claim[] {
-                new Claim("Id", userToken.Sub.ToString()),
-                   
-                    new Claim(ClaimTypes.Email, userToken.Email),
-                    new Claim(ClaimTypes.NameIdentifier, Id.ToString()),
+             List<Claim> claims = new List<Claim>
+            {
+                new Claim("Id", userToken.Id.ToString()),
+
+                    
                     new Claim(ClaimTypes.Expiration, DateTime.UtcNow.AddDays(1).ToString("MMM ddd dd yyyy HH:mm:ss tt"))
-            };
+                    };
+            
+            claims.AddRange(Roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
             return claims;
         }
 
@@ -33,16 +47,42 @@ namespace HonsBackendAPI.JWT
             {
                 var UserToken = new UserToken();
                 if (model == null) throw new ArgumentException(nameof(model));
-                // Get secret key
+                
+                // Get key
                 var key = System.Text.Encoding.ASCII.GetBytes(jwtSettings.IssuerSigningKey);
+
+
                 string Id = Guid.Empty.ToString();
+
+                //was validae
                 DateTime expireTime = DateTime.UtcNow.AddDays(1);
-                UserToken.Validaty = expireTime.TimeOfDay;
-                var JWToken = new JwtSecurityToken(issuer: jwtSettings.ValidIssuer, audience: jwtSettings.ValidAudience, claims: GetClaims(model, out Id), notBefore: new DateTimeOffset(DateTime.Now).DateTime, expires: new DateTimeOffset(expireTime).DateTime, signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256));
+                UserToken.Validate = expireTime.TimeOfDay;
+                
+                var JWToken = new JwtSecurityToken
+                    (
+                    issuer: jwtSettings.ValidIssuer, 
+                    audience: jwtSettings.ValidAudience, 
+                    claims: GetClaims(model, out Id), 
+                    notBefore: new DateTimeOffset(DateTime.Now).DateTime, 
+                    expires: new DateTimeOffset(expireTime).DateTime, 
+                    signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
+                    );
+
+
                 UserToken.Token = new JwtSecurityTokenHandler().WriteToken(JWToken);
                 UserToken.Email = model.Email;
-                UserToken.Sub = model.Sub;
-              
+                UserToken.Id = model.Id;
+                //UserToken.ConfirmPassword = model.ConfirmPassword;
+                //UserToken.CreatedAt = model.CreatedAt;
+                //UserToken.LastName = model.LastName;
+                //UserToken.FirstName = model.FirstName;
+                //UserToken.UpdatedAt = model.UpdatedAt;
+                //UserToken.Claims = JWToken.Claims;
+                //var claim = JWToken.Claims.Where(x => x.Value == "Customer");
+                //UserToken.Role = claim.First().Value.ToString();
+               
+                
+
                 return UserToken;
             }
             catch (Exception)

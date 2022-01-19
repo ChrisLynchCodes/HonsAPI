@@ -20,19 +20,21 @@ namespace HonsBackendAPI.Services.Repositories
 
         }
 
-        public async Task<List<Admin>> GetAsync() =>
+        public async Task<List<Admin>> GetAllAsync() =>
             await _adminsCollection.Find(_ => true).ToListAsync();
 
-        public async Task<Admin?> GetAsync(string id) =>
-        await _adminsCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
+        public async Task<Admin?> GetOneAsync(string adminId) =>
+        await _adminsCollection.Find(x => x.Id == adminId).FirstOrDefaultAsync();
+        public async Task<Admin?> GetByEmailAsync(string email) =>
+       await _adminsCollection.Find(x => x.Email == email).FirstOrDefaultAsync();
 
         public async Task CreateAsync(Admin newAdmin) =>
         await _adminsCollection.InsertOneAsync(newAdmin);
 
-        public async Task UpdateAsync(string id, Admin updatedAdmin) =>
-            await _adminsCollection.ReplaceOneAsync(x => x.Id == id, updatedAdmin);
+        public async Task UpdateAsync(string adminId, Admin updatedAdmin) =>
+            await _adminsCollection.ReplaceOneAsync(x => x.Id == adminId, updatedAdmin);
 
-        public async Task RemoveAsync(string id) =>
-            await _adminsCollection.DeleteOneAsync(x => x.Id == id);
+        public async Task RemoveAsync(string adminId) =>
+            await _adminsCollection.DeleteOneAsync(x => x.Id == adminId);
     }
 }

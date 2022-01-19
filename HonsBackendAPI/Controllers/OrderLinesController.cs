@@ -4,7 +4,9 @@ using HonsBackendAPI.DTOs;
 using HonsBackendAPI.Models;
 using HonsBackendAPI.Services;
 using HonsBackendAPI.Services.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -12,7 +14,7 @@ namespace HonsBackendAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [APIKey]
+    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
     public class OrderLinesController : ControllerBase
     {
         private readonly IOrderLineRepository _orderLinesRepository;
@@ -31,23 +33,23 @@ namespace HonsBackendAPI.Controllers
         [HttpGet("{orderId}")]
         public async Task<ActionResult<IEnumerable<OrderLineDto>>> Get(string orderId)
         {
-            var order = await _ordersRepository.GetAsync(orderId);
+            var orderModel = await _ordersRepository.GetOneAsync(orderId);
 
-            if (order is null || order.Id is null)
+            if (orderModel is null || orderModel.Id is null)
             {
                 return NotFound();
             }
 
-            var orderLines = await _orderLinesRepository.GetAllAsync(order.Id);
+            var orderLinesModels = await _orderLinesRepository.GetAllAsync(orderModel.Id);
 
-            if (orderLines is null)
+            if (orderLinesModels is null)
             {
                 return NotFound();
             }
 
 
 
-            return Ok(_mapper.Map<IEnumerable<OrderLineDto>>(orderLines));
+            return Ok(_mapper.Map<IEnumerable<OrderLineDto>>(orderLinesModels));
 
 
         }
@@ -60,21 +62,21 @@ namespace HonsBackendAPI.Controllers
         [HttpGet("{orderId}/{orderLineId}")]
         public async Task<ActionResult<OrderLineDto>> Get(string orderId, string orderLineId)
         {
-            var orderFromRepository = await _ordersRepository.GetAsync(orderId);
-            if (orderFromRepository is null || orderFromRepository.Id is null)
+            var orderModel = await _ordersRepository.GetOneAsync(orderId);
+            if (orderModel is null || orderModel.Id is null)
             {
                 return NotFound();
             }
 
-            var orderLineFromRepository = await _orderLinesRepository.GetOneAsync(orderId, orderLineId);
-            if (orderLineFromRepository is null || orderLineFromRepository.Id is null)
+            var orderLineModel = await _orderLinesRepository.GetOneAsync(orderId, orderLineId);
+            if (orderLineModel is null || orderLineModel.Id is null)
             {
                 return NotFound();
             }
 
 
 
-            return Ok(_mapper.Map<OrderLineDto>(orderLineFromRepository));
+            return Ok(_mapper.Map<OrderLineDto>(orderLineModel));
         }
 
 
@@ -83,7 +85,7 @@ namespace HonsBackendAPI.Controllers
         public async Task<IActionResult> Post(string orderId, [FromBody] OrderLineCreateDto newOrderLine)
         {
             //Ensure orderId is a valid order
-            var order = await _ordersRepository.GetAsync(orderId);
+            var order = await _ordersRepository.GetOneAsync(orderId);
             if (order is null || order.Id is null)
             {
                 return NotFound();
@@ -124,20 +126,21 @@ namespace HonsBackendAPI.Controllers
         [HttpPut("{orderId}/{orderLineId}")]
         public async Task<IActionResult> Update(string orderId, string orderLineId, [FromBody] OrderLineCreateDto updatedOrderLine)
         {
-            var orderLine = await _orderLinesRepository.GetOneAsync(orderId, orderLineId);
+            var orderLineModel = await _orderLinesRepository.GetOneAsync(orderId, orderLineId);
 
-            if (orderLine is null)
+            if (orderLineModel is null)
             {
                 return NotFound();
             }
 
             var orderLineToSave = _mapper.Map<OrderLine>(updatedOrderLine);
         
-            orderLineToSave.Id = orderLine.Id;
-            orderLineToSave.ProductId = orderLine.ProductId;
-            orderLineToSave.OrderId = orderLine.OrderId;
+            orderLineToSave.Id = orderLineModel.Id;
+            orderLineToSave.ProductId = orderLineModel.ProductId;
+            orderLineToSave.OrderId = orderLineModel.OrderId;
             orderLineToSave.UpdatedAt = DateTime.Now;
-            orderLineToSave.CreatedAt = orderLine.CreatedAt;
+            orderLineToSave.CreatedAt = orderLineModel.CreatedAt;
+
             if (orderLineToSave.Id is null)
             {
                 return NotFound();
@@ -153,22 +156,22 @@ namespace HonsBackendAPI.Controllers
         [HttpDelete("{orderId}/{orderLineId}")]
         public async Task<IActionResult> Delete(string orderId, string orderLineId)
         {
-            var order = await _ordersRepository.GetAsync(orderId);
+            var orderModel = await _ordersRepository.GetOneAsync(orderId);
 
-            if (order is null || order.Id is null)
+            if (orderModel is null || orderModel.Id is null)
             {
                 return NotFound();
             }
-            var orderLine = await _orderLinesRepository.GetOneAsync(order.Id, orderLineId);
+            var orderLineModel = await _orderLinesRepository.GetOneAsync(orderModel.Id, orderLineId);
 
-            if (orderLine is null || orderLine.Id is null)
+            if (orderLineModel is null || orderLineModel.Id is null)
             {
                 return NotFound();
             }
 
 
 
-            await _orderLinesRepository.RemoveAsync(orderLine.Id);
+            await _orderLinesRepository.RemoveAsync(orderLineModel.Id);
 
             return NoContent();
         }

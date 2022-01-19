@@ -31,12 +31,13 @@ namespace HonsBackendAPI.Models
         public string Password { get; set; } = null!;
 
         [Required]
+        [Compare("Password")]
         [BsonElement("confirm-password")]
-        public bool ConfirmPassword { get; set; }
+        public string? ConfirmPassword { get; set; }
 
-        //[Required]
-        //[BsonElement("address-ids")]
-        //public IEnumerable<string> AddressIds { get; set; } = new List<string>();
+        [Required]
+        [BsonElement("role")]
+        public string? Role { get; set; }
 
         [Required]
         [BsonElement("created-at")]

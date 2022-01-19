@@ -15,7 +15,7 @@ using System.Text;
 namespace HonsBackendAPI.Controllers
 {
     [Route("api/[controller]")]
-    [APIKey]
+
     [ApiController]
     public class CustomersController : ControllerBase
     {
@@ -35,12 +35,13 @@ namespace HonsBackendAPI.Controllers
 
 
         // GET: api/<CustomersController>
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+
         [HttpGet]
         [HttpHead]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<CustomerDto>>> Get()
         {
-            var customersFromRepository = await _customersRepository.GetAsync();
+            var customerModels = await _customersRepository.GetAllAsync();
 
             //Without AutoMapper
 
@@ -58,7 +59,7 @@ namespace HonsBackendAPI.Controllers
 
             //With AutoMapper
             //Map src object customersFromService to IEnumerable of CustomerDto's
-            return Ok(_mapper.Map<IEnumerable<CustomerDto>>(customersFromRepository));
+            return Ok(_mapper.Map<IEnumerable<CustomerDto>>(customerModels));
 
 
         }
@@ -66,9 +67,10 @@ namespace HonsBackendAPI.Controllers
 
         // GET api/<CustomersController>/5
         [HttpGet("{id:length(24)}")]
-        public async Task<ActionResult<CustomerDto>> Get(string id)
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "Admin, Customer")]
+        public async Task<ActionResult<CustomerDto>> Get(string customerId)
         {
-            var customersFromRepository = await _customersRepository.GetAsync(id);
+            var customersFromRepository = await _customersRepository.GetOneAsync(customerId);
 
             if (customersFromRepository is null)
             {
@@ -88,10 +90,85 @@ namespace HonsBackendAPI.Controllers
 
 
 
+        // PUT api/<CustomersController>/5
+        [HttpPut("{id:length(24)}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "Admin, Customer")]
+        public async Task<IActionResult> Update(string customerId, [FromBody] Customer updatedCustomer)
+        {
+            var customerModel = await _customersRepository.GetOneAsync(customerId);
+
+            if (customerModel is null || customerModel.Id is null)
+            {
+                return NotFound();
+            }
+
+            updatedCustomer.Id = customerModel.Id;
+            updatedCustomer.CreatedAt = customerModel.CreatedAt;
+            updatedCustomer.UpdatedAt = DateTime.Now;
+
+            await _customersRepository.UpdateAsync(updatedCustomer.Id, updatedCustomer);
+
+            return NoContent();
+        }
+
+        // DELETE api/<CustomersController>/5
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "Admin, Customer")]
+        [HttpDelete("{id:length(24)}")]
+        public async Task<IActionResult> Delete(string customerId)
+        {
+            var customerModel = await _customersRepository.GetOneAsync(customerId);
+
+            if (customerModel is null || customerModel.Id is null)
+            {
+                return NotFound();
+            }
+
+            await _customersRepository.RemoveAsync(customerModel.Id);
+
+            return NoContent();
+        }
 
 
 
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginDto loginDetails)
+        {
 
+            //Check customer logging in is not null
+            if (loginDetails is null)
+            {
+                return NoContent();
+            }
+
+            //check customer exists in db by email
+            var customerModel = await _customersRepository.GetByEmail(loginDetails.Email);
+
+            //If no customer matches the email or the password does not match the returned customer return unauthorized
+            if (customerModel is null || !customerModel.Password.Equals(loginDetails.Password))
+            {
+                return Unauthorized("Invalid Email or Password");
+            }
+
+            try
+            {
+                var Token = new UserToken();
+
+                Token = JwtHelpers.GenTokenkey(new UserToken()
+                {
+                    Id = customerModel.Id,
+                    Email = customerModel.Email,
+                    Role = customerModel.Role,
+
+                }, _jwtSettings);
+
+                return Ok(Token);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
+        }
 
 
 
@@ -107,9 +184,9 @@ namespace HonsBackendAPI.Controllers
             {
                 throw new ArgumentNullException(nameof(newCustomer));
             }
-            var customer = await _customersRepository.CustomerExists(newCustomer.Email);
+            var customerModel = await _customersRepository.GetByEmail(newCustomer.Email);
 
-            if (customer is not null)
+            if (customerModel is not null)
             {
                 return Unauthorized("This email is already associated with an account");
             }
@@ -118,7 +195,7 @@ namespace HonsBackendAPI.Controllers
 
             //map the createDTO to the model
             var customerToSave = _mapper.Map<Customer>(newCustomer);
-
+            customerToSave.Role = "Customer";
             //Save the model in the database
             await _customersRepository.CreateAsync(customerToSave);
 
@@ -129,159 +206,6 @@ namespace HonsBackendAPI.Controllers
             return CreatedAtAction(nameof(Get), new { id = customerToReturn.Id }, customerToReturn);
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // POST api/<CustomersController>
-
-        [HttpPost("login")]
-        public async Task<ActionResult<UserToken>> Post([FromBody] LoginDto loginDetails)
-        {
-            //Check customer logging in is not null
-            if (loginDetails is null)
-            {
-                return NoContent();
-            }
-
-            //check customer exists in db by email
-            var customer = await _customersRepository.CustomerExists(loginDetails.Email);
-
-            //If no customer matches the email or the password does not match the returned customer return unauthorized
-            if (customer is null || !customer.Password.Equals(loginDetails.Password))
-            {
-                return Unauthorized("Invalid Email or Password");
-            }
-
-
-
-            //JWT 
-            try
-            {
-                //create token
-                var Token = new UserToken();
-                Token = JwtHelpers.GenTokenkey(new UserToken()
-                {
-                    Sub = customer.Id,
-                    Email = customer.Email,
-                    ConfirmPassword = customer.ConfirmPassword,
-                    CreatedAt = customer.CreatedAt,
-                    FirstName = customer.FirstName,
-                    LastName = customer.LastName,
-                    UpdatedAt = customer.UpdatedAt
-                   
-                }, _jwtSettings);
-
-
-
-
-              
-               
-
-                 return Token;
-
-                
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw;
-            }
-
-
-            
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // PUT api/<CustomersController>/5
-        [HttpPut("{id:length(24)}")]
-        public async Task<IActionResult> Update(string id, [FromBody] Customer updatedCustomer)
-        {
-            var customerFromRepository = await _customersRepository.GetAsync(id);
-
-            if (customerFromRepository is null)
-            {
-                return NotFound();
-            }
-
-            updatedCustomer.Id = customerFromRepository.Id;
-            updatedCustomer.CreatedAt = customerFromRepository.CreatedAt;
-            updatedCustomer.UpdatedAt = DateTime.Now;
-
-            await _customersRepository.UpdateAsync(id, updatedCustomer);
-
-            return NoContent();
-        }
-
-        // DELETE api/<CustomersController>/5
-        [HttpDelete("{id:length(24)}")]
-        public async Task<IActionResult> Delete(string id)
-        {
-            var customerFromRepository = await _customersRepository.GetAsync(id);
-
-            if (customerFromRepository is null || customerFromRepository.Id is null)
-            {
-                return NotFound();
-            }
-
-            await _customersRepository.RemoveAsync(customerFromRepository.Id);
-
-            return NoContent();
-        }
 
 
 

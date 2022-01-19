@@ -23,7 +23,8 @@ namespace HonsBackendAPI.DTOs
         public string Password { get; set; } = null!;
 
         [Required]
-        public bool ConfirmPassword { get; set; }
+        [Compare("Password")]
+        public string? ConfirmPassword { get; set; }
 
 
     }

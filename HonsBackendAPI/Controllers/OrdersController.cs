@@ -4,6 +4,7 @@ using HonsBackendAPI.DTOs;
 using HonsBackendAPI.Models;
 using HonsBackendAPI.Services;
 using HonsBackendAPI.Services.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -12,7 +13,7 @@ namespace HonsBackendAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [APIKey]
+    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
     public class OrdersController : ControllerBase
     {
         private readonly IOrderRepository _ordersRepository;
@@ -33,7 +34,7 @@ namespace HonsBackendAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<OrderDto>>> Get()
         {
-            var orders = await _ordersRepository.GetAsync();
+            var orders = await _ordersRepository.GetAllAsync();
 
 
             //Map src object ordersFromService to IEnumerable of OrderDto's
@@ -46,7 +47,7 @@ namespace HonsBackendAPI.Controllers
         [HttpGet("{orderId:length(24)}")]
         public async Task<ActionResult<OrderDto>> Get(string orderId)
         {
-            var orders = await _ordersRepository.GetAsync(orderId);
+            var orders = await _ordersRepository.GetOneAsync(orderId);
 
             if (orders is null)
             {
@@ -61,7 +62,7 @@ namespace HonsBackendAPI.Controllers
         [Route("[action]/{customerId}")]
         public async Task<ActionResult<OrderDto>> GetOrders(string customerId)
         {
-            var orders = await _ordersRepository.GetForAsync(customerId);
+            var orders = await _ordersRepository.GetOrdersForCustomerAsync(customerId);
 
             if (orders is null)
             {
@@ -80,7 +81,7 @@ namespace HonsBackendAPI.Controllers
             {
                 return NotFound();
             }
-            var customer = await  _customersRepository.GetAsync(newOrder.CustomerId);
+            var customer = await  _customersRepository.GetOneAsync(newOrder.CustomerId);
             if (customer is null)
             {
                 return NotFound();
@@ -100,20 +101,20 @@ namespace HonsBackendAPI.Controllers
 
         // PUT api/<OrdersController>/5
         [HttpPut("{id:length(24)}")]
-        public async Task<IActionResult> Update(string id, [FromBody] OrderCreateDto updatedOrder)
+        public async Task<IActionResult> Update(string orderId, [FromBody] OrderCreateDto updatedOrder)
         {
-            var order = await _ordersRepository.GetAsync(id);
+            var orderModel = await _ordersRepository.GetOneAsync(orderId);
 
-            if (order is null)
+            if (orderModel is null)
             {
                 return NotFound();
             }
 
             var orderToSave = _mapper.Map<Order>(updatedOrder);
 
-            orderToSave.Id = order.Id;
+            orderToSave.Id = orderModel.Id;
             orderToSave.UpdatedAt = DateTime.Now;
-            orderToSave.CreatedAt = order.CreatedAt;
+            orderToSave.CreatedAt = orderModel.CreatedAt;
             if (orderToSave.Id is null)
             {
                 return NotFound();
@@ -129,16 +130,16 @@ namespace HonsBackendAPI.Controllers
         [HttpDelete("{orderId:length(24)}")]
         public async Task<IActionResult> Delete(string orderId)
         {
-            var order = await _ordersRepository.GetAsync(orderId);
+            var orderModel = await _ordersRepository.GetOneAsync(orderId);
 
-            if (order is null || order.Id is null)
+            if (orderModel is null || orderModel.Id is null)
             {
                 return NotFound();
             }
 
-            await _orderLinesRepository.RemoveManyAsync(order.Id);
+            await _orderLinesRepository.RemoveManyAsync(orderModel.Id);
 
-            await _ordersRepository.RemoveAsync(order.Id);
+            await _ordersRepository.RemoveAsync(orderModel.Id);
 
             return NoContent();
         }

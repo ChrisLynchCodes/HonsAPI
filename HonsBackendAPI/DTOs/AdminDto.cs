@@ -18,8 +18,9 @@
         public string Password { get; set; } = null!;
 
    
-        public bool ConfirmPassword { get; set; }
-
+        public string? ConfirmPassword { get; set; }
+      
+        public string? Role { get; set; }
 
 
         public DateTime CreatedAt { get; set; } 

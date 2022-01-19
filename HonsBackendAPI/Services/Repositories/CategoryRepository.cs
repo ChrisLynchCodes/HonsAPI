@@ -23,19 +23,19 @@ namespace HonsBackendAPI.Services.Repositories
 
         }
 
-        public async Task<List<Category>> GetAsync() =>
+        public async Task<List<Category>> GetAllAsync() =>
                await _categoriesCollection.Find(_ => true).ToListAsync();
 
-        public async Task<Category?> GetAsync(string id) =>
-               await _categoriesCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
+        public async Task<Category?> GetOneAsync(string categoryId) =>
+               await _categoriesCollection.Find(x => x.Id == categoryId).FirstOrDefaultAsync();
 
         public async Task CreateAsync(Category newCategory) =>
         await _categoriesCollection.InsertOneAsync(newCategory);
 
-        public async Task UpdateAsync(string id, Category updatedCategory) =>
-            await _categoriesCollection.ReplaceOneAsync(x => x.Id == id, updatedCategory);
+        public async Task UpdateAsync(string categoryId, Category updatedCategory) =>
+            await _categoriesCollection.ReplaceOneAsync(x => x.Id == categoryId, updatedCategory);
 
-        public async Task RemoveAsync(string id) =>
-            await _categoriesCollection.DeleteOneAsync(x => x.Id == id);
+        public async Task RemoveAsync(string categoryId) =>
+            await _categoriesCollection.DeleteOneAsync(x => x.Id == categoryId);
     }
 }

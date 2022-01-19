@@ -22,7 +22,7 @@ namespace HonsBackendAPI.Services.Repositories
         }
 
         //Get all addresses for a specific customer
-        public async Task<List<Address>> GetAsync(string customerId) =>
+        public async Task<List<Address>> GetAllAsync(string customerId) =>
              await _addressesCollection.Find(x => x.CustomerId == customerId).ToListAsync();
 
 
@@ -39,7 +39,7 @@ namespace HonsBackendAPI.Services.Repositories
         public async Task UpdateAsync(string addressId, Address updatedAddress) =>
             await _addressesCollection.ReplaceOneAsync(x => x.Id == addressId, updatedAddress);
 
-        public async Task RemoveAsync(string id) =>
-            await _addressesCollection.DeleteOneAsync(x => x.Id == id);
+        public async Task RemoveAsync(string addressId) =>
+            await _addressesCollection.DeleteOneAsync(x => x.Id == addressId);
     }
 }

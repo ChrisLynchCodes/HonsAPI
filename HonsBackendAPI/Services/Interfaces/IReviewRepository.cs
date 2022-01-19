@@ -5,11 +5,11 @@ namespace HonsBackendAPI.Services.Repositories
     public interface IReviewRepository
     {
         Task CreateAsync(Review newReview);
-        Task<List<Review>> GetAsync();
+        Task<List<Review>> GetAllAsync();
         Task<List<Review>> GetReviewsForProductAsync(string productId);
-        Task<List<Review>> GetReviewsForCustomerAsync(string customerId);
-        Task<Review?> GetAsync(string id);
-        Task RemoveAsync(string id);
-        Task UpdateAsync(string id, Review updatedReview);
+        Task<List<Review>> GetReviewsByCustomerAsync(string customerId);
+        Task<Review?> GetOneAsync(string reviewId);
+        Task RemoveAsync(string reviewId);
+        Task UpdateAsync(string reviewId, Review updatedReview);
     }
 }

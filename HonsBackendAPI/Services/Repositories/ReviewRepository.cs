@@ -20,15 +20,15 @@ namespace HonsBackendAPI.Services.Repositories
 
         }
 
-        public async Task<List<Review>> GetAsync() =>
+        public async Task<List<Review>> GetAllAsync() =>
             await _reviewsCollection.Find(_ => true).ToListAsync();
         public async Task<List<Review>> GetReviewsForProductAsync(string productId) =>
             await _reviewsCollection.Find(x => x.ProductId == productId).ToListAsync();
-        public async Task<List<Review>> GetReviewsForCustomerAsync(string customerId) =>
+        public async Task<List<Review>> GetReviewsByCustomerAsync(string customerId) =>
             await _reviewsCollection.Find(x => x.CustomerId == customerId).ToListAsync();
 
-        public async Task<Review?> GetAsync(string id) =>
-        await _reviewsCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
+        public async Task<Review?> GetOneAsync(string reviewId) =>
+        await _reviewsCollection.Find(x => x.Id == reviewId).FirstOrDefaultAsync();
 
         public async Task CreateAsync(Review newReview) =>
         await _reviewsCollection.InsertOneAsync(newReview);
