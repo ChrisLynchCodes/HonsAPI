@@ -33,7 +33,7 @@ namespace HonsBackendAPI.Controllers
 
         // GET: api/<ReviewsController>  Get All reviews
         [HttpGet]
-        [HttpHead]
+      
         public async Task<ActionResult<IEnumerable<ReviewDto>>> Get()
         {
             var reviewModels = await _reviewRepository.GetAllAsync();
@@ -96,6 +96,7 @@ namespace HonsBackendAPI.Controllers
         // GET: api/<ReviewsController>
         [HttpGet]
         [Route("[action]/{customerId}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
         public async Task<ActionResult<IEnumerable<ReviewDto>>> GetAllReviewsByCustomer(string customerId)
         {
             var reviewByCustomerModels = await _reviewRepository.GetReviewsByCustomerAsync(customerId);
@@ -116,6 +117,7 @@ namespace HonsBackendAPI.Controllers
 
         // POST api/<ReviewsController>
         [HttpPost("{customerId}/{productId}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
         public async Task<IActionResult> Post(string customerId, string productId, [FromBody] ReviewCreateDto newReview)
         {
             //Ensure customerId is a valid customer
@@ -163,6 +165,7 @@ namespace HonsBackendAPI.Controllers
 
         // PUT api/<ReviewsController>/5
         [HttpPut("{reviewId:length(24)}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
         public async Task<IActionResult> Update(string reviewId, [FromBody] ReviewCreateDto updatedReview)
         {
             var reviewModel = await _reviewRepository.GetOneAsync(reviewId);

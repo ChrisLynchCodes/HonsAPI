@@ -12,7 +12,7 @@ namespace HonsBackendAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-
+    
     public class AdminsController : ControllerBase
     {
 
@@ -30,6 +30,7 @@ namespace HonsBackendAPI.Controllers
 
         // GET api/<AdminsController>/
         [HttpGet]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin")]
         public async Task<ActionResult<AdminDto>> Get()
         {
             var adminModels = await _adminsRepository.GetAllAsync();
@@ -39,12 +40,13 @@ namespace HonsBackendAPI.Controllers
                 return NotFound();
             }
 
-            return Ok(_mapper.Map<AdminDto>(adminModels));
+            return Ok(_mapper.Map<IEnumerable<AdminDto>>(adminModels));
         }
 
 
         // GET api/<AdminsController>/5
-        [HttpGet("{id:length(24)}")]
+        [HttpGet("{adminId:length(24)}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin")]
         public async Task<ActionResult<AdminDto>> Get(string adminId)
         {
             var adminModel = await _adminsRepository.GetOneAsync(adminId);
@@ -59,8 +61,8 @@ namespace HonsBackendAPI.Controllers
 
 
         // PUT api/<AdminsController>/5
-        [HttpPut("{id:length(24)}")]
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPut("{adminId:length(24)}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin")]
         public async Task<IActionResult> Update(string adminId, [FromBody] AdminCreateDto updatedAdmin)
         {
             var adminModel = await _adminsRepository.GetOneAsync(adminId);
@@ -84,8 +86,8 @@ namespace HonsBackendAPI.Controllers
         }
 
         // DELETE api/<CustomersController>/5
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-        [HttpDelete("{id:length(24)}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin")]
+        [HttpDelete("{adminId:length(24)}")]
         public async Task<IActionResult> Delete(string adminId)
         {
             var adminModel = await _adminsRepository.GetOneAsync(adminId);

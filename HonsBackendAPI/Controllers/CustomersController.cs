@@ -37,8 +37,8 @@ namespace HonsBackendAPI.Controllers
         // GET: api/<CustomersController>
 
         [HttpGet]
-        [HttpHead]
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+ 
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin")]
         public async Task<ActionResult<IEnumerable<CustomerDto>>> Get()
         {
             var customerModels = await _customersRepository.GetAllAsync();
@@ -66,8 +66,8 @@ namespace HonsBackendAPI.Controllers
 
 
         // GET api/<CustomersController>/5
-        [HttpGet("{id:length(24)}")]
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "Admin, Customer")]
+        [HttpGet("{customerId:length(24)}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
         public async Task<ActionResult<CustomerDto>> Get(string customerId)
         {
             var customersFromRepository = await _customersRepository.GetOneAsync(customerId);
@@ -91,8 +91,8 @@ namespace HonsBackendAPI.Controllers
 
 
         // PUT api/<CustomersController>/5
-        [HttpPut("{id:length(24)}")]
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "Admin, Customer")]
+        [HttpPut("{customerId:length(24)}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
         public async Task<IActionResult> Update(string customerId, [FromBody] Customer updatedCustomer)
         {
             var customerModel = await _customersRepository.GetOneAsync(customerId);
@@ -112,8 +112,8 @@ namespace HonsBackendAPI.Controllers
         }
 
         // DELETE api/<CustomersController>/5
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "Admin, Customer")]
-        [HttpDelete("{id:length(24)}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
+        [HttpDelete("{customerId:length(24)}")]
         public async Task<IActionResult> Delete(string customerId)
         {
             var customerModel = await _customersRepository.GetOneAsync(customerId);

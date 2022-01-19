@@ -9,19 +9,24 @@ namespace HonsBackendAPI.JWT
         public static IEnumerable<Claim> GetClaims(this UserToken userToken, string Id)
         {
             ICollection<string> Roles = new List<string>();
-            if (userToken.Role is not null && userToken.Role.Equals("Customer"))
+            switch (userToken.Role)
             {
-                Roles.Add("Customer");
-            
-            }
-            else if (userToken.Role is not null && userToken.Role.Equals("Admin"))
-            {
-                Roles.Add("Admin");
-            }
-           
+                case not null when userToken.Role.Equals("SuperAdmin"):
+                    Roles.Add("SuperAdmin");
 
-             List<Claim> claims = new List<Claim>
-            {
+                    break;
+                case not null when userToken.Role.Equals("Admin"):
+                    Roles.Add("Admin");
+                    break;
+                case not null when userToken.Role.Equals("Customer"):
+                    Roles.Add("Customer");
+                    break;
+
+            }
+
+
+            List<Claim> claims = new()
+             {
                 new Claim("Id", userToken.Id.ToString()),
 
                     
@@ -71,6 +76,7 @@ namespace HonsBackendAPI.JWT
 
                 UserToken.Token = new JwtSecurityTokenHandler().WriteToken(JWToken);
                 UserToken.Email = model.Email;
+                UserToken.Role = model.Role;
                 UserToken.Id = model.Id;
                 //UserToken.ConfirmPassword = model.ConfirmPassword;
                 //UserToken.CreatedAt = model.CreatedAt;

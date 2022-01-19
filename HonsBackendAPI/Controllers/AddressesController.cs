@@ -11,7 +11,7 @@ namespace HonsBackendAPI.Controllers
 {
     [Route("api/customers/{customerId}/addresses")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
     public class AddressesController : ControllerBase
     {
         private readonly IAddressRepository _addressesRepository;
@@ -28,29 +28,34 @@ namespace HonsBackendAPI.Controllers
 
 
 
+
+
         // GET: api/<AddressesController>
         [HttpGet]
-        [HttpHead]
         public async Task<ActionResult<IEnumerable<AddressDto>>> Get(string customerId)
         {
-            var customer = await _customersRepository.GetOneAsync(customerId);
-
-            if (customer is null || customer.Id is null)
+            if (ModelState.IsValid)
             {
-                return NotFound();
+                var customer = await _customersRepository.GetOneAsync(customerId);
+
+                if (customer is null || customer.Id is null)
+                {
+                    return NotFound();
+                }
+
+                var addresses = await _addressesRepository.GetAllAddressesForCustomerAsync(customer.Id);
+
+                if (addresses is null)
+                {
+                    return NotFound();
+                }
+
+
+
+                return Ok(_mapper.Map<IEnumerable<AddressDto>>(addresses));
             }
-
-            var addresses = await _addressesRepository.GetAllAsync(customer.Id);
-
-            if (addresses is null)
-            {
-                return NotFound();
-            }
-
-
-
-            return Ok(_mapper.Map<IEnumerable<AddressDto>>(addresses));
-
+           
+            return BadRequest("Bad Request on Get Addresses for customer");
 
         }
 
@@ -91,39 +96,44 @@ namespace HonsBackendAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> Post(string customerId, [FromBody] AddressCreateDto newAddress)
         {
-            //Ensure customerId is a valid customer
-            var customer = await _customersRepository.GetOneAsync(customerId);
-            if (customer is null || customer.Id is null)
+
+            if (ModelState.IsValid)
             {
-                return NotFound();
+                //Ensure customerId is a valid customer
+                var customer = await _customersRepository.GetOneAsync(customerId);
+                if (customer is null || customer.Id is null)
+                {
+                    return NotFound();
+                }
+
+
+
+                //Map createDTO to model
+                var addressModel = _mapper.Map<Address>(newAddress);
+
+
+                //add the valid customer id to the addresses  customer id
+                addressModel.CustomerId = customer.Id;
+
+                //Save model in db
+                await _addressesRepository.CreateAsync(addressModel);
+
+                //Map model to output DTO
+                var addressDto = _mapper.Map<AddressDto>(addressModel);
+
+                //Ensure valid
+
+                if (addressDto is null || addressDto.Id is null)
+                {
+                    return NotFound();
+                }
+
+
+
+                return CreatedAtAction(nameof(Get), new { customerId = customer.Id, addressId = addressDto.Id }, addressDto);
             }
 
-
-
-            //Map createDTO to model
-            var addressModel = _mapper.Map<Address>(newAddress);
-
-
-            //add the valid customer id to the addresses  customer id
-            addressModel.CustomerId = customer.Id;
-
-            //Save model in db
-            await _addressesRepository.CreateAsync(addressModel);
-
-            //Map model to output DTO
-            var addressDto = _mapper.Map<AddressDto>(addressModel);
-
-            //Ensure valid
-
-            if (addressDto is null || addressDto.Id is null)
-            {
-                return NotFound();
-            }
-
-
-
-            return CreatedAtAction(nameof(Get), new { customerId = customer.Id, addressId = addressDto.Id }, addressDto);
-
+            return BadRequest("Bad Adress!!!");
 
 
         }

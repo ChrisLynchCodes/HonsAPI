@@ -11,7 +11,7 @@ namespace HonsBackendAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+   
     public class CategoriesController : ControllerBase
     {
         private readonly ICategoryRepository _categoriesRepository;
@@ -28,7 +28,6 @@ namespace HonsBackendAPI.Controllers
 
         // GET: api/<CategoriesController>
         [HttpGet]
-        [HttpHead]
         public async Task<ActionResult<IEnumerable<CategoryDto>>> Get()
         {
             var categoryModels = await _categoriesRepository.GetAllAsync();
@@ -39,7 +38,7 @@ namespace HonsBackendAPI.Controllers
 
 
         // GET api/<CategoriesController>/5
-        [HttpGet("{id:length(24)}")]
+        [HttpGet("{categoryId:length(24)}")]
         public async Task<ActionResult<CategoryDto>> Get(string categoryId)
         {
             var categoryModel = await _categoriesRepository.GetOneAsync(categoryId);
@@ -56,6 +55,7 @@ namespace HonsBackendAPI.Controllers
 
         // POST api/<CategoriesController>
         [HttpPost]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin")]
         public async Task<IActionResult> Post([FromBody] CategoryCreateDto newCategory)
         {
             var categoryModel = _mapper.Map<Category>(newCategory);
@@ -70,7 +70,8 @@ namespace HonsBackendAPI.Controllers
 
 
         // PUT api/<CategoriesController>/5
-        [HttpPut("{id:length(24)}")]
+        [HttpPut("{categoryId:length(24)}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin")]
         public async Task<IActionResult> Update(string categoryid, [FromBody] CategoryCreateDto updatedCategory)
         {
             var categoryModel = await _categoriesRepository.GetOneAsync(categoryid);
@@ -98,7 +99,8 @@ namespace HonsBackendAPI.Controllers
         }
 
         // DELETE api/<CategoriesController>/5
-        [HttpDelete("{id:length(24)}")]
+        [HttpDelete("{categoryId:length(24)}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin")]
         public async Task<IActionResult> Delete(string categoryId)
         {
             var categoryModel = await _categoriesRepository.GetOneAsync(categoryId);

@@ -12,7 +12,7 @@ namespace HonsBackendAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+
     public class ProductsController : ControllerBase
     {
         private readonly IProductRepository _productsRepository;
@@ -30,7 +30,6 @@ namespace HonsBackendAPI.Controllers
 
         // GET: api/<ProductsController>
         [HttpGet]
-        [HttpHead]
         public async Task<ActionResult<IEnumerable<ProductDto>>> Get()
         {
             var productModels = await _productsRepository.GetAllAsync();
@@ -41,10 +40,10 @@ namespace HonsBackendAPI.Controllers
 
 
         // GET api/<ProductsController>/5
-        [HttpGet("{id:length(24)}")]
-        public async Task<ActionResult<ProductDto>> Get(string ProductId)
+        [HttpGet("{productId:length(24)}")]
+        public async Task<ActionResult<ProductDto>> Get(string productId)
         {
-            var productModel = await _productsRepository.GetOneAsync(ProductId);
+            var productModel = await _productsRepository.GetOneAsync(productId);
 
             if (productModel is null)
             {
@@ -59,6 +58,7 @@ namespace HonsBackendAPI.Controllers
 
         // POST api/<ProductsController>
         [HttpPost("{categoryId}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin")]
         public async Task<IActionResult> Post(string categoryId, [FromBody] ProductCreateDto newProduct)
         {
             var categoryModel = await _categoriessRepository.GetOneAsync(categoryId);
@@ -83,7 +83,8 @@ namespace HonsBackendAPI.Controllers
 
 
         // PUT api/<CategoriesController>/5
-        [HttpPut("{id:length(24)}")]
+        [HttpPut("{productId:length(24)}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin")]
         public async Task<IActionResult> Update(string productId, [FromBody] ProductCreateDto updatedProduct)
         {
             var productModel = await _productsRepository.GetOneAsync(productId);
@@ -110,7 +111,8 @@ namespace HonsBackendAPI.Controllers
         }
 
         // DELETE api/<ProductsController>/5
-        [HttpDelete("{id:length(24)}")]
+        [HttpDelete("{productId:length(24)}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin")]
         public async Task<IActionResult> Delete(string productId)
         {
             var productModel = await _productsRepository.GetOneAsync(productId);

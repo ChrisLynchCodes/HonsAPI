@@ -13,7 +13,7 @@ namespace HonsBackendAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+    
     public class OrdersController : ControllerBase
     {
         private readonly IOrderRepository _ordersRepository;
@@ -32,6 +32,7 @@ namespace HonsBackendAPI.Controllers
 
         // GET: api/<OrdersController>
         [HttpGet]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin")]
         public async Task<ActionResult<IEnumerable<OrderDto>>> Get()
         {
             var orders = await _ordersRepository.GetAllAsync();
@@ -45,6 +46,7 @@ namespace HonsBackendAPI.Controllers
 
         // GET api/<OrdersController>/5
         [HttpGet("{orderId:length(24)}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
         public async Task<ActionResult<OrderDto>> Get(string orderId)
         {
             var orders = await _ordersRepository.GetOneAsync(orderId);
@@ -60,6 +62,7 @@ namespace HonsBackendAPI.Controllers
         // GET api/<OrdersController>/5  Get all orders for customer
         [HttpGet]
         [Route("[action]/{customerId}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
         public async Task<ActionResult<OrderDto>> GetOrders(string customerId)
         {
             var orders = await _ordersRepository.GetOrdersForCustomerAsync(customerId);
@@ -75,6 +78,7 @@ namespace HonsBackendAPI.Controllers
 
         // POST api/<OrdersController>
         [HttpPost]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
         public async Task<IActionResult> Post([FromBody] OrderCreateDto newOrder)
         {
             if(newOrder is null || newOrder.CustomerId is null)
@@ -100,7 +104,8 @@ namespace HonsBackendAPI.Controllers
 
 
         // PUT api/<OrdersController>/5
-        [HttpPut("{id:length(24)}")]
+        [HttpPut("{orderId:length(24)}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin")]
         public async Task<IActionResult> Update(string orderId, [FromBody] OrderCreateDto updatedOrder)
         {
             var orderModel = await _ordersRepository.GetOneAsync(orderId);
@@ -128,6 +133,7 @@ namespace HonsBackendAPI.Controllers
 
         // DELETE api/<OrdersController>/5
         [HttpDelete("{orderId:length(24)}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin")]
         public async Task<IActionResult> Delete(string orderId)
         {
             var orderModel = await _ordersRepository.GetOneAsync(orderId);

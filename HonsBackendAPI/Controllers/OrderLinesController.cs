@@ -14,7 +14,7 @@ namespace HonsBackendAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+   
     public class OrderLinesController : ControllerBase
     {
         private readonly IOrderLineRepository _orderLinesRepository;
