@@ -165,6 +165,7 @@ namespace HonsBackendAPI.Controllers
 
             //map the createDTO to the model
             var adminToSave = _mapper.Map<Admin>(newAdmin);
+            adminToSave.Role = "Admin";
 
             //Save the model in the database
             await _adminsRepository.CreateAsync(adminToSave);

@@ -24,11 +24,11 @@ namespace HonsBackendAPI.DTOs
         public string City { get; set; } = null!;
 
         [Required]
-        [MaxLength(50)]
+        [Phone]
         public string MobileNumber { get; set; } = null!;
 
 
-        [MaxLength(50)]
+        [Phone]
         public string PhoneNumber { get; set; } = null!;
 
         [Required]

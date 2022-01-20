@@ -32,12 +32,12 @@ namespace HonsBackendAPI.Models
         public string City { get; set; } = null!;
 
         [Required]
-        [MaxLength(50)]
+        [Phone]
         [BsonElement("mobile-number")]
         public string MobileNumber { get; set; } = null!;
 
-        
-        [MaxLength(50)]
+
+        [Phone]
         [BsonElement("phone-number")]
         public string PhoneNumber { get; set; } = null!;
 
