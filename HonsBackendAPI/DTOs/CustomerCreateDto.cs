@@ -15,7 +15,7 @@ namespace HonsBackendAPI.DTOs
         public string LastName { get; set; } = null!;
 
         [Required]
-        [MaxLength(100)]
+        [EmailAddress]
         public string Email { get; set; } = null!;
 
         [Required]

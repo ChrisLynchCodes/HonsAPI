@@ -10,6 +10,7 @@ namespace HonsBackendAPI.Services.Repositories
         Task<List<Review>> GetReviewsByCustomerAsync(string customerId);
         Task<Review?> GetOneAsync(string reviewId);
         Task RemoveAsync(string reviewId);
+        Task RemoveManyAsync(string customerId);
         Task UpdateAsync(string reviewId, Review updatedReview);
     }
 }

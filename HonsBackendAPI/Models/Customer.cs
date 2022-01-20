@@ -21,7 +21,7 @@ namespace HonsBackendAPI.Models
         public string LastName { get; set; } = null!;
 
         [Required]
-        [MaxLength(100)]
+        [EmailAddress]
         [BsonElement("email")]
         public string Email { get; set; } = null!;
 

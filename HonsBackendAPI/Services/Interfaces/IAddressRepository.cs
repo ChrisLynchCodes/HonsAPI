@@ -10,6 +10,7 @@ namespace HonsBackendAPI.Services.Repositories
         
         Task<Address?> GetOneAsync(string addressId);
         Task RemoveAsync(string addresId);
+        Task RemoveManyAsync(string customerId);
         Task UpdateAsync(string addressId, Address updatedAddress);
     }
 }

@@ -21,12 +21,19 @@ namespace HonsBackendAPI.Controllers
     {
 
         private readonly ICustomerRepository _customersRepository;
+        private readonly IAddressRepository _addressRepository;
+        private readonly IOrderRepository _ordersRepository;
+        private readonly IReviewRepository _reviewsRepository;
         private readonly JwtSettings _jwtSettings;
         private readonly IMapper _mapper;
 
-        public CustomersController(CustomerRepository customersRepository, IMapper mapper, JwtSettings jwtSettings)
+        public CustomersController(CustomerRepository customersRepository, IMapper mapper, JwtSettings jwtSettings, 
+            AddressRepository addressRepository, OrderRepository orderRepository, ReviewRepository reviewRepository)
         {
             _customersRepository = customersRepository;
+            _addressRepository = addressRepository;
+            _ordersRepository = orderRepository;
+            _reviewsRepository = reviewRepository;
             _jwtSettings = jwtSettings;
             _mapper = mapper;
         }
@@ -118,10 +125,15 @@ namespace HonsBackendAPI.Controllers
         {
             var customerModel = await _customersRepository.GetOneAsync(customerId);
 
+
             if (customerModel is null || customerModel.Id is null)
             {
                 return NotFound();
             }
+         //Remove a customers orders, addresses, and reviews when their account is deleted
+            await  _ordersRepository.RemoveManyAsync(customerModel.Id);
+            await _addressRepository.RemoveManyAsync(customerModel.Id);
+            await _reviewsRepository.RemoveManyAsync(customerModel.Id);
 
             await _customersRepository.RemoveAsync(customerModel.Id);
 

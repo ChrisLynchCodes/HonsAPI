@@ -9,6 +9,7 @@ namespace HonsBackendAPI.Services.Repositories
         Task<List<Order>> GetOrdersForCustomerAsync(string customerId);
         Task<Order?> GetOneAsync(string orderId);
         Task RemoveAsync(string orderId);
+        Task RemoveManyAsync(string customerId);
         Task UpdateAsync(string orderId, Order updatedOrder);
     }
 }

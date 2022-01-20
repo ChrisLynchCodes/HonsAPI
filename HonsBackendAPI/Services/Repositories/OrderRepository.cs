@@ -32,5 +32,8 @@ namespace HonsBackendAPI.Services.Repositories
 
         public async Task RemoveAsync(string orderId) =>
             await _ordersCollection.DeleteOneAsync(x => x.Id == orderId);
+
+        public async Task RemoveManyAsync(string customerId) =>
+       await _ordersCollection.DeleteManyAsync(x => x.CustomerId == customerId);
     }
 }
