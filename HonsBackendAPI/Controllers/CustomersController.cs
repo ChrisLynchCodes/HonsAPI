@@ -4,6 +4,7 @@ using HonsBackendAPI.DTOs;
 using HonsBackendAPI.JWT;
 using HonsBackendAPI.Models;
 using HonsBackendAPI.ResourceParamaters;
+using HonsBackendAPI.Services;
 using HonsBackendAPI.Services.Interfaces;
 using HonsBackendAPI.Services.Repositories;
 using Microsoft.AspNetCore.Authorization;
@@ -153,13 +154,19 @@ namespace HonsBackendAPI.Controllers
             }
 
             //check customer exists in db by email
-            var customerModel = await _customersRepository.GetByEmail(loginDetails.Email);
+            var customerModel = await _customersRepository.GetByEmailAsync(loginDetails.Email);
 
             //If no customer matches the email or the password does not match the returned customer return unauthorized
-            if (customerModel is null || !customerModel.Password.Equals(loginDetails.Password))
+            byte[] salt = new byte[128 / 8];
+
+            salt = Encoding.ASCII.GetBytes(customerModel.PasswordSalt);
+
+            //If no customer matches the email or the password does not match the returned admin return unauthorized
+            if (customerModel is null || customerModel.PasswordHash.Equals(EncryptPassword.HashPassword(loginDetails.Password, salt)))
             {
                 return Unauthorized("Invalid Email or Password");
             }
+
 
             try
             {
@@ -191,31 +198,54 @@ namespace HonsBackendAPI.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Post([FromBody] CustomerCreateDto newCustomer)
         {
-            //Check pottential customer is not null
-            if (newCustomer is null)
+            if (ModelState.IsValid)
             {
-                throw new ArgumentNullException(nameof(newCustomer));
+                //Check pottential newCustomer is not null
+                if (newCustomer is null || newCustomer.Email is null)
+                {
+                    return NotFound();
+                }
+
+                var customerModel = await _customersRepository.GetByEmailAsync(newCustomer.Email);
+
+
+                if (customerModel is not null)
+                {
+                    return Unauthorized("This email is already associated with an account");
+                }
+
+
+
+                //map the createDTO to the model
+                var customerToSave = _mapper.Map<Customer>(newCustomer);
+
+                //salt and hash newCustomer password and assign to the model salt as a string
+                if (newCustomer.Password is not null)
+                {
+                    //Generate salt 
+                    var salt = EncryptPassword.GenerateSalt(newCustomer.Password);
+                    //then convert to string for saving in db
+                    customerToSave.PasswordSalt = Convert.ToBase64String(salt);
+                    //hash password&salt
+                    customerToSave.PasswordHash = EncryptPassword.HashPassword(newCustomer.Password, salt);
+
+                }
+
+
+
+
+                //Save the model in the database
+                await _customersRepository.CreateAsync(customerToSave);
+
+                //Map the model to output dto
+                var customerToReturn = _mapper.Map<CustomerDto>(customerToSave);
+
+
+                return CreatedAtAction(nameof(Get), new { id = customerToReturn.Id }, customerToReturn);
             }
-            var customerModel = await _customersRepository.GetByEmail(newCustomer.Email);
 
-            if (customerModel is not null)
-            {
-                return Unauthorized("This email is already associated with an account");
-            }
+            return NotFound();
 
-            //newCustomer.Password = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
-
-            //map the createDTO to the model
-            var customerToSave = _mapper.Map<Customer>(newCustomer);
-            customerToSave.Role = "Customer";
-            //Save the model in the database
-            await _customersRepository.CreateAsync(customerToSave);
-
-            //Map the model to output dto
-            var customerToReturn = _mapper.Map<CustomerDto>(customerToSave);
-
-
-            return CreatedAtAction(nameof(Get), new { id = customerToReturn.Id }, customerToReturn);
         }
 
 

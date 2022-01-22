@@ -27,7 +27,7 @@ namespace HonsBackendAPI.Services.Repositories
         public async Task<Customer?> GetOneAsync(string customerId) =>
             await _customersCollection.Find(x => x.Id == customerId).FirstOrDefaultAsync();
 
-        public async Task<Customer?> GetByEmail(string email) =>
+        public async Task<Customer?> GetByEmailAsync(string email) =>
             await _customersCollection.Find(x => x.Email == email).FirstOrDefaultAsync();
 
         public async Task CreateAsync(Customer newCustomer) =>

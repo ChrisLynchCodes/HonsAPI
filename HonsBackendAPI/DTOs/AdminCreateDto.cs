@@ -26,8 +26,6 @@ namespace HonsBackendAPI.DTOs
         [Compare("Password")]
         public string? ConfirmPassword { get; set; }
 
-        [Required]
-        [MaxLength(50)]
-        public string? Role { get; set; } 
+       
     }
 }

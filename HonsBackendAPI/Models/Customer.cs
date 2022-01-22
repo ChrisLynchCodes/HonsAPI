@@ -13,31 +13,30 @@ namespace HonsBackendAPI.Models
         [Required]
         [MaxLength(50)]
         [BsonElement("first-name")]
-        public string FirstName { get; set; } = null!;
+        public string? FirstName { get; set; } 
 
         [Required]
         [MaxLength(50)]
         [BsonElement("last-name")]
-        public string LastName { get; set; } = null!;
+        public string? LastName { get; set; }
 
         [Required]
         [EmailAddress]
         [BsonElement("email")]
-        public string Email { get; set; } = null!;
+        public string? Email { get; set; }
 
         [Required]
         [MaxLength(50)]
-        [BsonElement("password")]
-        public string Password { get; set; } = null!;
+        [BsonElement("password-hash")]
+        public string? PasswordHash { get; set; }
 
         [Required]
-        [Compare("Password")]
-        [BsonElement("confirm-password")]
-        public string? ConfirmPassword { get; set; }
+        [BsonElement("password-salt")]
+        public string? PasswordSalt { get; set; }
 
         [Required]
         [BsonElement("role")]
-        public string? Role { get; set; }
+        public string? Role { get; set; } = "Customer";
 
 
         [Required]

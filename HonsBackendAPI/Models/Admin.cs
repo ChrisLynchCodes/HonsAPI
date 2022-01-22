@@ -27,17 +27,19 @@ namespace HonsBackendAPI.Models
 
         [Required]
         [MaxLength(50)]
-        [BsonElement("password")]
-        public string Password { get; set; } = null!;
+        [BsonElement("password-hash")]
+        public string PasswordHash { get; set; } = null!;
+
 
         [Required]
-        [Compare("Password")]
-        [BsonElement("confirm-password")]
-        public string? ConfirmPassword { get; set; }
+        [BsonElement("password-salt")]
+        public string? PasswordSalt { get; set; } 
+
+  
 
         [Required]
         [BsonElement("role")]
-        public string? Role { get; set; }
+        public string? Role { get; set; } = "Admin";
 
         [Required]
         [BsonElement("created-at")]

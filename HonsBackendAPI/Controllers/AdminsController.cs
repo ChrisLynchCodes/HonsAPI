@@ -3,10 +3,12 @@ using HonsBackendAPI.Attributes;
 using HonsBackendAPI.DTOs;
 using HonsBackendAPI.JWT;
 using HonsBackendAPI.Models;
+using HonsBackendAPI.Services;
 using HonsBackendAPI.Services.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Text;
 
 namespace HonsBackendAPI.Controllers
 {
@@ -114,8 +116,12 @@ namespace HonsBackendAPI.Controllers
             //check admin exists in db by email
             var adminModel = await _adminsRepository.GetByEmailAsync(loginDetails.Email);
 
-            //If no admin matches the email or the password does not match the returned customer return unauthorized
-            if (adminModel is null || !adminModel.Password.Equals(loginDetails.Password))
+            byte[] salt = new byte[128 / 8];
+            
+            salt = Encoding.ASCII.GetBytes(adminModel.PasswordSalt);
+
+            //If no admin matches the email or the password does not match the returned admin return unauthorized
+            if (adminModel is null || adminModel.PasswordHash.Equals(EncryptPassword.HashPassword(loginDetails.Password, salt)))
             {
                 return Unauthorized("Invalid Email or Password");
             }
@@ -149,32 +155,54 @@ namespace HonsBackendAPI.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Post([FromBody] AdminCreateDto newAdmin)
         {
-            //Check pottential admin is not null
-            if (newAdmin is null)
+            if (ModelState.IsValid)
             {
-                throw new ArgumentNullException(nameof(newAdmin));
+                //Check pottential admin is not null
+                if (newAdmin is null || newAdmin.Email is null)
+                {
+                    return NotFound();
+                }
+
+                var adminModel = await _adminsRepository.GetByEmailAsync(newAdmin.Email);
+
+
+                if (adminModel is not null)
+                {
+                    return Unauthorized("This email is already associated with an account");
+                }
+
+
+
+                //map the createDTO to the model
+                var adminToSave = _mapper.Map<Admin>(newAdmin);
+
+                //salt and hash newAdmin password and assign to the model salt as a string
+                if(newAdmin.Password is not null)
+                {
+                    //Generate salt 
+                    var salt = EncryptPassword.GenerateSalt(newAdmin.Password);
+                    //then convert to string for saving in db
+                    adminToSave.PasswordSalt = Convert.ToBase64String(salt);
+                    //hash password&salt
+                    adminToSave.PasswordHash = EncryptPassword.HashPassword(newAdmin.Password, salt);
+
+                }
+
+
+
+
+                //Save the model in the database
+                await _adminsRepository.CreateAsync(adminToSave);
+
+                //Map the model to output dto
+                var adminToReturn = _mapper.Map<AdminDto>(adminToSave);
+
+
+                return CreatedAtAction(nameof(Get), new { id = adminToReturn.Id }, adminToReturn);
             }
-            var adminModel = await _adminsRepository.GetByEmailAsync(newAdmin.Email);
 
-            if (adminModel is not null)
-            {
-                return Unauthorized("This email is already associated with an account");
-            }
-
-            //newCustomer.Password = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
-
-            //map the createDTO to the model
-            var adminToSave = _mapper.Map<Admin>(newAdmin);
-            adminToSave.Role = "Admin";
-
-            //Save the model in the database
-            await _adminsRepository.CreateAsync(adminToSave);
-
-            //Map the model to output dto
-            var adminToReturn = _mapper.Map<AdminDto>(adminToSave);
-
-
-            return CreatedAtAction(nameof(Get), new { id = adminToReturn.Id }, adminToReturn);
+            return NotFound();
+            
         }
 
 
