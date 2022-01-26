@@ -38,6 +38,19 @@ namespace HonsBackendAPI.Controllers
             return Ok(_mapper.Map<IEnumerable<ProductDto>>(productModels));
 
         }
+        
+
+        // GET: api/<ProductsController>
+        [HttpGet]
+        [APIKey]
+        [Route("[action]/{ammount}")]
+        public async Task<ActionResult<IEnumerable<ProductDto>>> GetN(int ammount)
+        {
+            var productModels = await _productsRepository.GetNAsync(ammount);
+
+            return Ok(_mapper.Map<IEnumerable<ProductDto>>(productModels));
+
+        }
 
 
         // GET api/<ProductsController>/5
@@ -55,6 +68,18 @@ namespace HonsBackendAPI.Controllers
             return Ok(_mapper.Map<ProductDto>(productModel));
         }
 
+
+        // GET: api/<ProductsController>
+        [HttpGet]
+        [APIKey]
+        [Route("[action]/{categoryId}")]
+        public async Task<ActionResult<IEnumerable<ProductDto>>> GetProductsByCategoryAsync(string categoryId)
+        {
+            var productModels = await _productsRepository.GetProductsByCategoryAsync(categoryId);
+
+            return Ok(_mapper.Map<IEnumerable<ProductDto>>(productModels));
+
+        }
 
 
 

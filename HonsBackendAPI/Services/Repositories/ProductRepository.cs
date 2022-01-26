@@ -25,9 +25,27 @@ namespace HonsBackendAPI.Services.Repositories
 
         public async Task<List<Product>> GetAllAsync() =>
                await _productsCollection.Find(_ => true).ToListAsync();
+        public async Task<List<Product>> GetNAsync(int ammount) =>
+              await _productsCollection.Find(_ => true).Limit(ammount).ToListAsync();
 
         public async Task<Product?> GetOneAsync(string productId) =>
                await _productsCollection.Find(x => x.Id == productId).FirstOrDefaultAsync();
+        public async Task<List<Product>> GetProductsByCategoryAsync(string categoryId)
+        {
+
+            // Filter definition (analyzer provides mql as information message)
+            //var filter = Builders<Product>.Filter.Eq(m => m.CategoryId, categoryId);
+
+
+            // Sort definition (analyzer provides mql as information message)
+            var sort = Builders<Product>.Sort.Ascending(m => m.ProductName);
+        
+            return await _productsCollection.Find(x => x.CategoryId == categoryId).Sort(sort).ToListAsync();
+
+            
+        }
+
+
 
         public async Task CreateAsync(Product newProduct) =>
         await _productsCollection.InsertOneAsync(newProduct);
@@ -38,6 +56,6 @@ namespace HonsBackendAPI.Services.Repositories
         public async Task RemoveAsync(string productId) =>
             await _productsCollection.DeleteOneAsync(x => x.Id == productId);
 
-      
+
     }
 }

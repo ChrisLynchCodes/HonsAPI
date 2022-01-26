@@ -23,6 +23,8 @@ namespace HonsBackendAPI.Services.Repositories
 
         }
 
+        
+
         public async Task<List<Category>> GetAllAsync() =>
                await _categoriesCollection.Find(_ => true).ToListAsync();
 
