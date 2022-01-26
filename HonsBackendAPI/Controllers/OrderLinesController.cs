@@ -29,7 +29,7 @@ namespace HonsBackendAPI.Controllers
         }
 
 
-
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
         [HttpGet("{orderId}")]
         public async Task<ActionResult<IEnumerable<OrderLineDto>>> Get(string orderId)
         {
@@ -60,6 +60,7 @@ namespace HonsBackendAPI.Controllers
 
         // GET api/<OrderLinesController>/  //Get specific orderline on an order
         [HttpGet("{orderId}/{orderLineId}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
         public async Task<ActionResult<OrderLineDto>> Get(string orderId, string orderLineId)
         {
             var orderModel = await _ordersRepository.GetOneAsync(orderId);
@@ -82,6 +83,7 @@ namespace HonsBackendAPI.Controllers
 
         // POST api/<OrderLinesController>
         [HttpPost("{orderId}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "Customer")]
         public async Task<IActionResult> Post(string orderId, [FromBody] OrderLineCreateDto newOrderLine)
         {
             //Ensure orderId is a valid order
@@ -124,6 +126,7 @@ namespace HonsBackendAPI.Controllers
 
         // PUT api/<OrderLinesController>/5
         [HttpPut("{orderId}/{orderLineId}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin")]
         public async Task<IActionResult> Update(string orderId, string orderLineId, [FromBody] OrderLineCreateDto updatedOrderLine)
         {
             var orderLineModel = await _orderLinesRepository.GetOneAsync(orderId, orderLineId);
@@ -154,6 +157,7 @@ namespace HonsBackendAPI.Controllers
 
         // DELETE api/<OrderLinesController>/5
         [HttpDelete("{orderId}/{orderLineId}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin")]
         public async Task<IActionResult> Delete(string orderId, string orderLineId)
         {
             var orderModel = await _ordersRepository.GetOneAsync(orderId);

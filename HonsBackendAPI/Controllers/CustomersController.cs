@@ -144,6 +144,7 @@ namespace HonsBackendAPI.Controllers
 
 
         [HttpPost("login")]
+        [APIKey]
         public async Task<IActionResult> Login(LoginDto loginDetails)
         {
 
@@ -196,6 +197,7 @@ namespace HonsBackendAPI.Controllers
 
         // POST api/<CustomersController>
         [HttpPost("register")]
+        [APIKey]
         public async Task<IActionResult> Post([FromBody] CustomerCreateDto newCustomer)
         {
             if (ModelState.IsValid)

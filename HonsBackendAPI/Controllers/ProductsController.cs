@@ -30,6 +30,7 @@ namespace HonsBackendAPI.Controllers
 
         // GET: api/<ProductsController>
         [HttpGet]
+        [APIKey]
         public async Task<ActionResult<IEnumerable<ProductDto>>> Get()
         {
             var productModels = await _productsRepository.GetAllAsync();
@@ -41,6 +42,7 @@ namespace HonsBackendAPI.Controllers
 
         // GET api/<ProductsController>/5
         [HttpGet("{productId:length(24)}")]
+        [APIKey]
         public async Task<ActionResult<ProductDto>> Get(string productId)
         {
             var productModel = await _productsRepository.GetOneAsync(productId);

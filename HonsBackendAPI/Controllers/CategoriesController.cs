@@ -28,6 +28,7 @@ namespace HonsBackendAPI.Controllers
 
         // GET: api/<CategoriesController>
         [HttpGet]
+        [APIKey]
         public async Task<ActionResult<IEnumerable<CategoryDto>>> Get()
         {
             var categoryModels = await _categoriesRepository.GetAllAsync();
@@ -39,6 +40,7 @@ namespace HonsBackendAPI.Controllers
 
         // GET api/<CategoriesController>/5
         [HttpGet("{categoryId:length(24)}")]
+        [APIKey]
         public async Task<ActionResult<CategoryDto>> Get(string categoryId)
         {
             var categoryModel = await _categoriesRepository.GetOneAsync(categoryId);

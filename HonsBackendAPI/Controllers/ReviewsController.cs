@@ -33,7 +33,7 @@ namespace HonsBackendAPI.Controllers
 
         // GET: api/<ReviewsController>  Get All reviews
         [HttpGet]
-      
+        [APIKey]
         public async Task<ActionResult<IEnumerable<ReviewDto>>> Get()
         {
             var reviewModels = await _reviewRepository.GetAllAsync();
@@ -53,6 +53,7 @@ namespace HonsBackendAPI.Controllers
 
         // GET api/<ReviewsController>/5  Get Specific review
         [HttpGet("{reviewId:length(24)}")]
+        [APIKey]
         public async Task<ActionResult<ReviewDto>> Get(string reviewId)
         {
             //Ensure review is valid
@@ -76,6 +77,7 @@ namespace HonsBackendAPI.Controllers
         // GET: api/<ReviewsController> //Get All reviews for a specific product
         [HttpGet]
         [Route("[action]/{productId}")]
+        [APIKey]
         public async Task<ActionResult<IEnumerable<ReviewDto>>> GetAllReviewsForProduct(string productId)
         {
             var reviewForProductModels = await _reviewRepository.GetReviewsForProductAsync(productId);
@@ -117,7 +119,7 @@ namespace HonsBackendAPI.Controllers
 
         // POST api/<ReviewsController>
         [HttpPost("{customerId}/{productId}")]
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Customer")]
         public async Task<IActionResult> Post(string customerId, string productId, [FromBody] ReviewCreateDto newReview)
         {
             //Ensure customerId is a valid customer
@@ -195,6 +197,7 @@ namespace HonsBackendAPI.Controllers
 
         // DELETE api/<ReviewsController>/5
         [HttpDelete("{reviewId:length(24)}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin")]
         public async Task<IActionResult> Delete(string reviewId)
         {
             var reviewModel = await _reviewRepository.GetOneAsync(reviewId);

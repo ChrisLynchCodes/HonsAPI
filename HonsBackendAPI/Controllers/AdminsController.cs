@@ -105,6 +105,7 @@ namespace HonsBackendAPI.Controllers
         }
 
         [HttpPost("login")]
+        [APIKey]
         public async Task<ActionResult<UserToken>> Post([FromBody] LoginDto loginDetails)
         {
             //Check admin logging in is not null
@@ -153,6 +154,7 @@ namespace HonsBackendAPI.Controllers
 
         // POST api/<CustomersController>
         [HttpPost("register")]
+        [APIKey]
         public async Task<IActionResult> Post([FromBody] AdminCreateDto newAdmin)
         {
             if (ModelState.IsValid)

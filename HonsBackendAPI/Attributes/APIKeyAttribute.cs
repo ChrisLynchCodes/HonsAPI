@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace HonsBackendAPI.Attributes
 {
-    [AttributeUsage(validOn: AttributeTargets.Class)]
+    [AttributeUsage(validOn: AttributeTargets.Method)]
     public class APIKeyAttribute : Attribute, IAsyncActionFilter
     {
 
