@@ -13,5 +13,6 @@
         public string AdminsCollectionName { get; set; } = null!;
         public string ReviewsCollectionName { get; set; } = null!;
         public string AddressesCollectionName { get; set; } = null!;
+        public string BasketsCollectionName { get; set; } = null!;
     }
 }

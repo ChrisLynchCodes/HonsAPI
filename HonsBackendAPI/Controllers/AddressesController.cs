@@ -32,6 +32,7 @@ namespace HonsBackendAPI.Controllers
 
         // GET: api/<AddressesController>
         [HttpGet]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
         public async Task<ActionResult<IEnumerable<AddressDto>>> Get(string customerId)
         {
             if (ModelState.IsValid)
@@ -63,6 +64,7 @@ namespace HonsBackendAPI.Controllers
 
         // GET api/<AddressesController>/5
         [HttpGet("{addressId:length(24)}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
         public async Task<ActionResult<AddressDto>> Get(string customerId, string addressId)
         {
             //Ensure customer is valid
@@ -94,6 +96,7 @@ namespace HonsBackendAPI.Controllers
 
         // POST api/<AddressesController>
         [HttpPost]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
         public async Task<IActionResult> Post(string customerId, [FromBody] AddressCreateDto newAddress)
         {
 
@@ -133,7 +136,7 @@ namespace HonsBackendAPI.Controllers
                 return CreatedAtAction(nameof(Get), new { customerId = customer.Id, addressId = addressDto.Id }, addressDto);
             }
 
-            return BadRequest("Bad Adress!!!");
+            return BadRequest("Bad Address");
 
 
         }
@@ -141,6 +144,7 @@ namespace HonsBackendAPI.Controllers
 
         // PUT api/<AddressesController>/5
         [HttpPut("{addressId:length(24)}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
         public async Task<IActionResult> Update(string addressId, [FromBody] AddressCreateDto updatedAddress)
         {
             var address = await _addressesRepository.GetOneAsync(addressId);
@@ -169,6 +173,7 @@ namespace HonsBackendAPI.Controllers
 
         // DELETE api/<AddressesController>/5
         [HttpDelete("{addressId:length(24)}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
         public async Task<IActionResult> Delete(string customerId, string addressId)
         {
             var customer = await _customersRepository.GetOneAsync(customerId);

@@ -33,13 +33,17 @@ namespace HonsBackendAPI.Models
 
         [Required]
         [BsonElement("password-salt")]
-        public string? PasswordSalt { get; set; } 
+        public string? PasswordSalt { get; set; }
 
   
+        [BsonElement("avatar-link")]
+        public string? ImageLink { get; set; }
 
         [Required]
         [BsonElement("role")]
         public string? Role { get; set; } = "Admin";
+       
+    
 
         [Required]
         [BsonElement("created-at")]

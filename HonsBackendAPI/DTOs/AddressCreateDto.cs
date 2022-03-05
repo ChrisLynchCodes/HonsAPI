@@ -28,7 +28,7 @@ namespace HonsBackendAPI.DTOs
         public string MobileNumber { get; set; } = null!;
 
 
-        [Phone]
+
         public string PhoneNumber { get; set; } = null!;
 
         [Required]

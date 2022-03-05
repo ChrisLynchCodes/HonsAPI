@@ -19,6 +19,7 @@
      
       
         public string? Role { get; set; }
+        public string? ImageLink { get; set; }
 
 
         public DateTime CreatedAt { get; set; } 

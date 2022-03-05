@@ -14,7 +14,7 @@ namespace HonsBackendAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    
+
     public class AdminsController : ControllerBase
     {
 
@@ -65,7 +65,7 @@ namespace HonsBackendAPI.Controllers
         // PUT api/<AdminsController>/5
         [HttpPut("{adminId:length(24)}")]
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin")]
-        public async Task<IActionResult> Update(string adminId, [FromBody] AdminCreateDto updatedAdmin)
+        public async Task<IActionResult> Update(string adminId, [FromBody] AdminEditDto updatedAdmin)
         {
             var adminModel = await _adminsRepository.GetOneAsync(adminId);
 
@@ -73,16 +73,22 @@ namespace HonsBackendAPI.Controllers
             {
                 return NotFound();
             }
-            var adminToSave = _mapper.Map<Admin>(updatedAdmin);
-
-            adminToSave.Id = adminModel.Id;
-            adminToSave.CreatedAt = adminModel.CreatedAt;
-            adminToSave.UpdatedAt = DateTime.Now;
-            if (adminToSave is null || adminToSave.Id is null)
+            if (adminModel is null || adminModel.Id is null)
             {
                 return NotFound();
             }
-            await _adminsRepository.UpdateAsync(adminToSave.Id, adminToSave);
+
+            adminModel.UpdatedAt = DateTime.Now;
+            adminModel.Email = updatedAdmin.Email;
+            adminModel.FirstName = updatedAdmin.FirstName;
+            adminModel.LastName = updatedAdmin.LastName;
+            if (updatedAdmin.ImageLink is not null)
+            {
+                adminModel.ImageLink = updatedAdmin.ImageLink;
+            }
+
+
+            await _adminsRepository.UpdateAsync(adminModel.Id, adminModel);
 
             return NoContent();
         }
@@ -103,6 +109,8 @@ namespace HonsBackendAPI.Controllers
 
             return NoContent();
         }
+ 
+
 
         [HttpPost("login")]
         [APIKey]
@@ -114,47 +122,60 @@ namespace HonsBackendAPI.Controllers
                 return NoContent();
             }
 
+
             //check admin exists in db by email
             var adminModel = await _adminsRepository.GetByEmailAsync(loginDetails.Email);
 
-            byte[] salt = new byte[128 / 8];
-            
-            salt = Encoding.ASCII.GetBytes(adminModel.PasswordSalt);
 
-            //If no admin matches the email or the password does not match the returned admin return unauthorized
-            if (adminModel is null || adminModel.PasswordHash.Equals(EncryptPassword.HashPassword(loginDetails.Password, salt)))
+
+            if (adminModel is not null && adminModel.PasswordSalt is not null)
             {
+                //Create byte array for admins 128-bit salt -- salt generated on signup
+
+                byte[] salt = Convert.FromBase64String(adminModel.PasswordSalt);
+
+                if (adminModel.PasswordHash.Equals(EncryptPassword.HashPassword(loginDetails.Password, salt)))
+                {
+                    //JWT 
+                    try
+                    {
+                        //create token
+                        var Token = new UserToken();
+                        Token = JwtHelpers.GenTokenkey(new UserToken()
+                        {
+                            Id = adminModel.Id,
+                            Email = adminModel.Email,
+                            Role = adminModel.Role
+
+                        }, _jwtSettings);
+
+                        return Ok(Token.Token);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                        throw;
+                    }
+                }
+                else
+                {
+                    //If password hashes do not match
+                    return Unauthorized("Invalid Email or Password");
+                }
+            }
+            else
+            {
+                //If GetByEmail returns null
                 return Unauthorized("Invalid Email or Password");
             }
 
-            //JWT 
-            try
-            {
-                //create token
-                var Token = new UserToken();
-                Token = JwtHelpers.GenTokenkey(new UserToken()
-                {
-                    Id = adminModel.Id,
-                    Email = adminModel.Email,
-                    Role = adminModel.Role
 
-                }, _jwtSettings);
-
-                return Token;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw;
-            }
         }
-
-
 
 
         // POST api/<CustomersController>
         [HttpPost("register")]
-        [APIKey]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin")]
         public async Task<IActionResult> Post([FromBody] AdminCreateDto newAdmin)
         {
             if (ModelState.IsValid)
@@ -179,7 +200,7 @@ namespace HonsBackendAPI.Controllers
                 var adminToSave = _mapper.Map<Admin>(newAdmin);
 
                 //salt and hash newAdmin password and assign to the model salt as a string
-                if(newAdmin.Password is not null)
+                if (newAdmin.Password is not null)
                 {
                     //Generate salt 
                     var salt = EncryptPassword.GenerateSalt(newAdmin.Password);
@@ -204,7 +225,7 @@ namespace HonsBackendAPI.Controllers
             }
 
             return NotFound();
-            
+
         }
 
 

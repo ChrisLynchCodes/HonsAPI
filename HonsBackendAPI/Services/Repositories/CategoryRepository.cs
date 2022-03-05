@@ -30,6 +30,8 @@ namespace HonsBackendAPI.Services.Repositories
 
         public async Task<Category?> GetOneAsync(string categoryId) =>
                await _categoriesCollection.Find(x => x.Id == categoryId).FirstOrDefaultAsync();
+        public async Task<List<Category>> GetNAsync(int ammount) =>
+              await _categoriesCollection.Find(_ => true).Limit(ammount).ToListAsync();
 
         public async Task CreateAsync(Category newCategory) =>
         await _categoriesCollection.InsertOneAsync(newCategory);

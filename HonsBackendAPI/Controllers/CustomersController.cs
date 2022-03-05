@@ -9,6 +9,8 @@ using HonsBackendAPI.Services.Interfaces;
 using HonsBackendAPI.Services.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -28,7 +30,7 @@ namespace HonsBackendAPI.Controllers
         private readonly JwtSettings _jwtSettings;
         private readonly IMapper _mapper;
 
-        public CustomersController(CustomerRepository customersRepository, IMapper mapper, JwtSettings jwtSettings, 
+        public CustomersController(CustomerRepository customersRepository, IMapper mapper, JwtSettings jwtSettings,
             AddressRepository addressRepository, OrderRepository orderRepository, ReviewRepository reviewRepository)
         {
             _customersRepository = customersRepository;
@@ -45,7 +47,7 @@ namespace HonsBackendAPI.Controllers
         // GET: api/<CustomersController>
 
         [HttpGet]
- 
+
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin")]
         public async Task<ActionResult<IEnumerable<CustomerDto>>> Get()
         {
@@ -101,7 +103,7 @@ namespace HonsBackendAPI.Controllers
         // PUT api/<CustomersController>/5
         [HttpPut("{customerId:length(24)}")]
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
-        public async Task<IActionResult> Update(string customerId, [FromBody] Customer updatedCustomer)
+        public async Task<IActionResult> Update(string customerId, [FromBody] CustomerEditDto updatedCustomer)
         {
             var customerModel = await _customersRepository.GetOneAsync(customerId);
 
@@ -110,11 +112,15 @@ namespace HonsBackendAPI.Controllers
                 return NotFound();
             }
 
-            updatedCustomer.Id = customerModel.Id;
-            updatedCustomer.CreatedAt = customerModel.CreatedAt;
-            updatedCustomer.UpdatedAt = DateTime.Now;
+            
+          
+            customerModel.UpdatedAt = DateTime.Now;
+            customerModel.Email = updatedCustomer.Email;
+            customerModel.FirstName = updatedCustomer.FirstName;
+            customerModel.LastName = updatedCustomer.LastName;
+            customerModel.ImageLink = updatedCustomer.ImageLink;
 
-            await _customersRepository.UpdateAsync(updatedCustomer.Id, updatedCustomer);
+            await _customersRepository.UpdateAsync(customerModel.Id, customerModel);
 
             return NoContent();
         }
@@ -131,8 +137,8 @@ namespace HonsBackendAPI.Controllers
             {
                 return NotFound();
             }
-         //Remove a customers orders, addresses, and reviews when their account is deleted
-            await  _ordersRepository.RemoveManyAsync(customerModel.Id);
+            //Remove a customers orders, addresses, and reviews when their account is deleted
+            await _ordersRepository.RemoveManyAsync(customerModel.Id);
             await _addressRepository.RemoveManyAsync(customerModel.Id);
             await _reviewsRepository.RemoveManyAsync(customerModel.Id);
 
@@ -145,51 +151,63 @@ namespace HonsBackendAPI.Controllers
 
         [HttpPost("login")]
         [APIKey]
-        public async Task<IActionResult> Login(LoginDto loginDetails)
+        public async Task<ActionResult<UserToken>> Post([FromBody] LoginDto loginDetails)
         {
-
             //Check customer logging in is not null
             if (loginDetails is null)
             {
                 return NoContent();
             }
 
+
             //check customer exists in db by email
             var customerModel = await _customersRepository.GetByEmailAsync(loginDetails.Email);
 
-            //If no customer matches the email or the password does not match the returned customer return unauthorized
-            byte[] salt = new byte[128 / 8];
 
-            salt = Encoding.ASCII.GetBytes(customerModel.PasswordSalt);
 
-            //If no customer matches the email or the password does not match the returned admin return unauthorized
-            if (customerModel is null || customerModel.PasswordHash.Equals(EncryptPassword.HashPassword(loginDetails.Password, salt)))
+            if (customerModel is not null && customerModel.PasswordSalt is not null)
             {
+                //Create byte array for customers 128-bit salt -- salt generated on signup
+
+                byte[] salt = Convert.FromBase64String(customerModel.PasswordSalt);
+
+                if (customerModel.PasswordHash.Equals(EncryptPassword.HashPassword(loginDetails.Password, salt)))
+                {
+                    //JWT 
+                    try
+                    {
+                        //create token
+                        var Token = new UserToken();
+                        Token = JwtHelpers.GenTokenkey(new UserToken()
+                        {
+                            Id = customerModel.Id,
+                            Email = customerModel.Email,
+                            Role = customerModel.Role
+
+                        }, _jwtSettings);
+
+                        return Ok(Token.Token);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                        throw;
+                    }
+                }
+                else
+                {
+                    //If password hashes do not match
+                    return Unauthorized("Invalid Email or Password");
+                }
+            }
+            else
+            {
+                //If GetByEmail returns null
                 return Unauthorized("Invalid Email or Password");
             }
 
 
-            try
-            {
-                var Token = new UserToken();
-
-                Token = JwtHelpers.GenTokenkey(new UserToken()
-                {
-                    Id = customerModel.Id,
-                    Email = customerModel.Email,
-                    Role = customerModel.Role,
-
-                }, _jwtSettings);
-
-                return Ok(Token);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw;
-            }
         }
-
 
 
 

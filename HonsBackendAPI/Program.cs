@@ -7,11 +7,13 @@ using HonsBackendAPI.Services.Repositories;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
-
-
+using Stripe;
+using HonsBackendAPI.Models;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins"; 
  var builder = WebApplication.CreateBuilder(args);
+
+
 
 // Add services to the container.
 builder.Services.Configure<DatabaseSettings>(
@@ -24,12 +26,17 @@ builder.Services.AddSingleton<CategoryRepository>();
 builder.Services.AddSingleton<ReviewRepository>();
 builder.Services.AddSingleton<AdminRepository>();
 builder.Services.AddSingleton<AddressRepository>();
+builder.Services.AddSingleton<BasketRepository>();
 
 builder.Services.AddJWTTokenServices(builder.Configuration);
 
-//builder.Services.AddScoped<ITokenService, TokenService>();
+var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+StripeConfiguration.ApiKey = config["Stripe:SecretKey"];
+
+
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
 
 
 
@@ -53,7 +60,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: MyAllowSpecificOrigins,
                       builder =>
                       {
-                          builder.WithOrigins("http://localhost:3000/");
+                          builder.WithOrigins("https://uwssurvival.herokuapp.com");
                       });
 });
 

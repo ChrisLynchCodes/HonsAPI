@@ -51,6 +51,17 @@ namespace HonsBackendAPI.Controllers
             return Ok(_mapper.Map<IEnumerable<ProductDto>>(productModels));
 
         }
+        // GET: api/<ProductsController>
+        [HttpGet]
+        [APIKey]
+        [Route("[action]/{name}")]
+        public async Task<ActionResult<IEnumerable<ProductDto>>> GetByName(string name)
+        {
+            var productModels = await _productsRepository.GetProductsByNameAsync(name);
+
+            return Ok(_mapper.Map<IEnumerable<ProductDto>>(productModels));
+
+        }
 
 
         // GET api/<ProductsController>/5
@@ -84,11 +95,11 @@ namespace HonsBackendAPI.Controllers
 
 
         // POST api/<ProductsController>
-        [HttpPost("{categoryId}")]
+        [HttpPost]
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin")]
-        public async Task<IActionResult> Post(string categoryId, [FromBody] ProductCreateDto newProduct)
+        public async Task<IActionResult> Post([FromBody] ProductCreateDto newProduct)
         {
-            var categoryModel = await _categoriessRepository.GetOneAsync(categoryId);
+            var categoryModel = await _categoriessRepository.GetOneAsync(newProduct.CategoryId);
             if(categoryModel is null || categoryModel.Id is null)
             {
                 return NotFound();

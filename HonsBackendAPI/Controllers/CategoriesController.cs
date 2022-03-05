@@ -52,6 +52,17 @@ namespace HonsBackendAPI.Controllers
 
             return Ok(_mapper.Map<CategoryDto>(categoryModel));
         }
+        // GET: api/<CategoriesController>
+        [HttpGet]
+        [APIKey]
+        [Route("[action]/{ammount}")]
+        public async Task<ActionResult<IEnumerable<CategoryDto>>> GetN(int ammount)
+        {
+            var categoryModels = await _categoriesRepository.GetNAsync(ammount);
+
+            return Ok(_mapper.Map<IEnumerable<CategoryDto>>(categoryModels));
+
+        }
 
 
 

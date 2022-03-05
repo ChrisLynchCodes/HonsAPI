@@ -37,7 +37,7 @@ namespace HonsBackendAPI.Models
         public string MobileNumber { get; set; } = null!;
 
 
-        [Phone]
+    
         [BsonElement("phone-number")]
         public string PhoneNumber { get; set; } = null!;
 

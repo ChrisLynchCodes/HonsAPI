@@ -13,7 +13,8 @@ namespace HonsBackendAPI.DTOs
         [Required]
         public decimal Price { get; set; }
 
-       
+        [Required]
+        public string? CategoryId { get; set; }
 
 
         [Required]

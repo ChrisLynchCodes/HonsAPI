@@ -59,7 +59,7 @@ namespace HonsBackendAPI.JWT
 
                 string Id = Guid.Empty.ToString();
 
-                //was validae
+               
                 DateTime expireTime = DateTime.UtcNow.AddDays(1);
                 UserToken.Validate = expireTime.TimeOfDay;
                 
