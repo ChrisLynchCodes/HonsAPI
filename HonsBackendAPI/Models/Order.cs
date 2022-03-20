@@ -10,21 +10,26 @@ namespace HonsBackendAPI.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string? Id { get; set; }
 
-        [Required]
-        [BsonElement("total")]
-        public decimal Total { get; set; }
+
        
         [Required]
         [BsonElement("customer-id")]
         public string? CustomerId { get; set; }
+        [Required]
+        [BsonElement("address-id")]
+        public string? AddressId { get; set; }
+
+        [Required]
+        [BsonElement("total")]
+        public decimal Total { get; set; }
 
         [Required]
         [BsonElement("expected-delivery-date")]
         public DateTime ExpectedDeliveryDate { get; set; } = DateTime.Now.AddDays(5);
 
         [Required]
-        [BsonElement("completed")]
-        public bool Completed { get; set; }
+        [BsonElement("status")]
+        public string Status { get; set; } = "Pending";
 
 
         [Required]

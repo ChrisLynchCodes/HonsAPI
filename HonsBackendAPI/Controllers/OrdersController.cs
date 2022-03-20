@@ -75,6 +75,22 @@ namespace HonsBackendAPI.Controllers
             return Ok(_mapper.Map<IEnumerable<OrderDto>>(orders));
         }
 
+        // GET api/<OrdersController>/5  Get all orders for customer
+        [HttpGet]
+        [Route("[action]/{customerId}")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Admin, Customer")]
+        public async Task<ActionResult<OrderDto>> GetLatestOrder(string customerId)
+        {
+            var order = await _ordersRepository.GetOrderForCustomerAsync(customerId);
+
+            if (order is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(_mapper.Map<OrderDto>(order));
+        }
+
 
         // POST api/<OrdersController>
         [HttpPost]

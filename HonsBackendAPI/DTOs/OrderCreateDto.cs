@@ -9,9 +9,11 @@ namespace HonsBackendAPI.DTOs
         [Required]
         public string? CustomerId { get; set; }
 
+        [Required]
+      
+        public string? AddressId { get; set; }
 
 
-       
 
 
     }

@@ -14,8 +14,7 @@
       
         public int Quantity { get; set; }
 
-        public decimal ProductPrice { get; set; }
-       
+     
        
         public DateTime CreatedAt { get; set; } 
 

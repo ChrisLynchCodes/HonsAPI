@@ -36,6 +36,10 @@ namespace HonsBackendAPI.Models
         public string? ImageLink { get; set; }
 
         [Required]
+        [BsonElement("stripe-price")]
+        public string? StripePrice { get; set; }
+
+        [Required]
         [BsonElement("created-at")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 

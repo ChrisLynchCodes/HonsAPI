@@ -22,6 +22,8 @@
 
         public string? ImageLink { get; set; }
 
+      public string? StripePrice { get; set; }
+
 
         public DateTime CreatedAt { get; set; }
 

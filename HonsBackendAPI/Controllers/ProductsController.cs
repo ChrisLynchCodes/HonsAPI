@@ -93,6 +93,25 @@ namespace HonsBackendAPI.Controllers
         }
 
 
+        // POST: api/<ProductsController>
+        [HttpPost("GetManyProductsByIdAsync")]
+       
+        public async Task<ActionResult<IEnumerable<ProductDto>>> GetManyProductsByIdAsync([FromBody] ProdId productIdsCollection )
+        {
+       
+            var products = await _productsRepository.GetManyAsync(productIdsCollection.ProductIds);
+
+
+            return Ok(_mapper.Map<IEnumerable<ProductDto>>(products));
+
+        }
+
+       
+
+
+
+
+
 
         // POST api/<ProductsController>
         [HttpPost]

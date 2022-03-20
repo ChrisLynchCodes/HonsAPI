@@ -43,11 +43,11 @@ namespace HonsBackendAPI.Services.Repositories
         public async Task<Product?> GetOneAsync(string productId) =>
                await _productsCollection.Find(x => x.Id == productId).FirstOrDefaultAsync();
 
-        public async Task<List<Product>> GetManyAsync(List<string> productIds)
+        public async Task<List<Product>> GetManyAsync(List<string>productIds)
         {
 
             var filterDef = new FilterDefinitionBuilder<Product>();
-            var filter = filterDef.In(x => x.Id, new[] { "61dcaecbf34f7920e33400b0", "620809c5e833d7972d8ed0bb" });
+            var filter = filterDef.In(x => x.Id, productIds);
           
         
 

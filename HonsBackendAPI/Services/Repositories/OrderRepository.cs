@@ -22,8 +22,19 @@ namespace HonsBackendAPI.Services.Repositories
                 await _ordersCollection.Find(_ => true).ToListAsync();
         public async Task<Order?> GetOneAsync(string orderId) =>
         await _ordersCollection.Find(x => x.Id == orderId).FirstOrDefaultAsync();
+       
+       
         public async Task<List<Order>> GetOrdersForCustomerAsync(string customerId) =>
          await _ordersCollection.Find(x => x.CustomerId == customerId).ToListAsync();
+
+        public async Task<Order> GetOrderForCustomerAsync(string customerId)
+        {
+            var sort = Builders<Order>.Sort.Descending(m => m.CreatedAt);
+            var order = await _ordersCollection.Find(x => x.CustomerId == customerId).Sort(sort).FirstOrDefaultAsync();
+
+            return order;
+        }
+    
         public async Task CreateAsync(Order newOrder) =>
         await _ordersCollection.InsertOneAsync(newOrder);
 

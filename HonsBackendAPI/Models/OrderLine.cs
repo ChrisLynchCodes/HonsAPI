@@ -23,11 +23,6 @@ namespace HonsBackendAPI.Models
         [Required]
         [BsonElement("quantity")]
         public int Quantity { get; set; }
-
-       
-        [Required]
-        [BsonElement("product-price")]
-        public decimal ProductPrice { get; set; }
        
 
         [Required]

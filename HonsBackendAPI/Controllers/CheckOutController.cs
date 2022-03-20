@@ -1,4 +1,5 @@
 ﻿using HonsBackendAPI.Models;
+using HonsBackendAPI.Services.Interfaces;
 using HonsBackendAPI.Services.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,50 +18,125 @@ namespace HonsBackendAPI.Controllers
         private readonly ICustomerRepository _customersRepository;
         private readonly IAddressRepository _addressRepository;
         private readonly IOrderRepository _ordersRepository;
+        private readonly IOrderLineRepository _orderLinesRepository;
         private readonly IProductRepository _productRepository;
+        private readonly IBasketRepository _basketRepository;
 
-        public CheckOutController(CustomerRepository customersRepository, AddressRepository addressRepository, OrderRepository orderRepository, ProductRepository productRepository)
+        public CheckOutController(BasketRepository basketRepository, OrderLineRepository orderLineRepository, CustomerRepository customersRepository, AddressRepository addressRepository, OrderRepository orderRepository, ProductRepository productRepository)
         {
             _addressRepository = addressRepository;
             _customersRepository = customersRepository;
             _ordersRepository = orderRepository;
             _productRepository = productRepository;
+            _basketRepository = basketRepository;
+            _orderLinesRepository = orderLineRepository;
         }
 
         [HttpPost("Create")]
-        public ActionResult Create([FromForm] string basketId)
+        public async Task<ActionResult> Create([FromForm] string basketId)
         {
 
-            //Get basket from db then rest of 'tables/documents' using basket contents
+            var domain = "https://uwssurvival.herokuapp.com/";
 
-            var domain = "http://localhost:3000";
+            //Get basket
+            var basket = await _basketRepository.GetOneAsync(basketId);
+            //Get Customer 
+            var customer = await _customersRepository.GetOneAsync(basket.CustomerId);
+
+            //Get list of products ids from basket
+            var productIds = new List<string>();
+            foreach (var line in basket.BasketProducts)
+            {
+                productIds.Add(line.ProductId);
+            }
+            //Get products matching ids
+            var products = await _productRepository.GetManyAsync(productIds);
+            
+            //define order total
+            decimal total = 0;
+            //if productId == basketProduct.ProductId += total*quanttiy to total
+            foreach(var product in products)
+            {
+                foreach(var line in basket.BasketProducts)
+                {
+                    if(product.Id == line.ProductId)
+                    {
+                        total += (product.Price * line.Quantity);
+                    }
+                }
+            }
+
+
+
+
+
+
+
+
+
+            //Create Order with cust id & total
+            Models.Order orderModel = new()
+            {
+                CustomerId = basket.CustomerId,
+                Total = total
+
+
+            };
+            await _ordersRepository.CreateAsync(orderModel);
+
+            var order = await _ordersRepository.GetOrderForCustomerAsync(basket.CustomerId);
+
+            //Create orderlines 
+            foreach (var product in basket.BasketProducts)
+            {
+                var orderLine = new OrderLine();
+                orderLine.ProductId = product.ProductId;
+                orderLine.Quantity = product.Quantity;
+                orderLine.OrderId = order.Id;
+
+                _orderLinesRepository.CreateAsync(orderLine);
+
+            }
+
+
+            var items = new List<SessionLineItemOptions>();
+
+            if (basket is not null)
+            {
+                foreach (var product in basket.BasketProducts)
+                {
+
+
+                    var stripeProduct = new SessionLineItemOptions
+                    {
+                        Price = product.StripePrice,
+                        Quantity = product.Quantity,
+
+
+                    };
+                    items.Add(stripeProduct);
+                }
+
+            }
+
+            //success url should call api endpoint to create orderlines and orders then redirect client to their orders page=================================
+            //Or pass the checkout session id and take data from there
+            //add customer and address to stripe checkout page from db
+
             var options = new Stripe.Checkout.SessionCreateOptions
             {
-
-                LineItems = new List<SessionLineItemOptions>
-                {
-
-                  new SessionLineItemOptions
-                  {
-                    // Provide the exact Price ID (for example, pr_1234) of the product you want to sell
-                    Price = "price_1KZQsQLs5lGv9x9Kr71VJ9Jf",
-                    Quantity = 1,
-                  },
-
-                },
+                CustomerEmail =customer.Email,
+                LineItems = items,
                 Mode = "payment",
-                SuccessUrl = domain + "?success=true",
-                CancelUrl = domain + "?canceled=true",
-                SubmitType = "pay",
-                 BillingAddressCollection = "auto",
-                ShippingAddressCollection = new SessionShippingAddressCollectionOptions
-                {
-                    AllowedCountries = new List<string>
-                  {
 
-                    "GB",
-                  },
-                },
+                CancelUrl = domain + "checkout",
+                SuccessUrl = domain + "ordersuccess",
+                SubmitType = "pay",
+                BillingAddressCollection = "auto",
+                
+
+              
+
             };
             var service = new Stripe.Checkout.SessionService();
             Stripe.Checkout.Session session = service.Create(options);
@@ -74,41 +150,5 @@ namespace HonsBackendAPI.Controllers
 
 
 
-
-
-        //[HttpPost("PaymentIntent")]
-        //public async Task<string> PaymentIntent([FromBody] CustomerBasket customerBasket)
-        //{
-        //    var productIds = new List<string>();
-        //    foreach(var bP in customerBasket.BasketProducts)
-        //    {
-        //      productIds.Add(bP.ProductId);
-        //    }
-        //    var products = await _productRepository.GetManyAsync(productIds);
-
-        //    decimal total = 0;
-
-        //    foreach (var product in products)
-        //    {
-        //        total += product.Price;
-        //        Console.WriteLine(product.Price);
-        //    }
-
-
-        //    var options = new PaymentIntentCreateOptions
-        //    {
-        //        Amount = (Convert.ToInt64(total) * 100),
-        //        Currency = "gbp",
-        //        AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
-        //        {
-        //            Enabled = true,
-        //        },
-        //    };
-        //    var service = new PaymentIntentService();
-        //    var intent = service.Create(options);
-
-        //    return intent.ClientSecret;
-
-        //}
     }
 }

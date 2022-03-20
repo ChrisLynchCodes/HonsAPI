@@ -96,7 +96,7 @@ namespace HonsBackendAPI.Controllers
             basketModel.UpdatedAt = DateTime.Now;
             basketModel.BasketProducts = updatedBasket.BasketProducts;
             basketModel.CustomerId = updatedBasket.CustomerId;
-
+            
 
 
 

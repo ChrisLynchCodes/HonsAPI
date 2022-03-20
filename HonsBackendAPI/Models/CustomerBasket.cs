@@ -14,7 +14,9 @@ namespace HonsBackendAPI.Models
         [BsonElement("customer-id")]
         public string? CustomerId { get; set; }
 
-      
+        [BsonElement("address-id")]
+        public string? AddressId { get; set; }
+
         [BsonElement("basket-products")]
         public List<BasketProducts> BasketProducts { get; set; } = new List<BasketProducts>();
 
@@ -33,6 +35,7 @@ namespace HonsBackendAPI.Models
       
         public int Quantity { get; set; }
         public string? ProductId { get; set; }
+        public string? StripePrice { get; set; }
 
     }
 }

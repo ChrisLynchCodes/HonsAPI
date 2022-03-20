@@ -11,5 +11,6 @@ namespace HonsBackendAPI.Services.Repositories
         Task RemoveAsync(string orderId);
         Task RemoveManyAsync(string customerId);
         Task UpdateAsync(string orderId, Order updatedOrder);
+        Task<Order> GetOrderForCustomerAsync(string customerId);
     }
 }

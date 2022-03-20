@@ -26,6 +26,9 @@ namespace HonsBackendAPI.DTOs
         [Required]
         public string? ImageLink { get; set; }
 
+        [Required]
+        public string? StripePrice { get; set; }
+
 
     }
 }
